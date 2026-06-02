@@ -39,43 +39,48 @@
 }
 /* ── LIGHT MODE ── */
 body.light-mode {
-  --cyan-light: #AADDDD;
-  --cyan-dark: #1D5557;
-  --near-black: #F0EDE8;
-  --sand: #8B5E20;
-  --wine: #5C3D1E;
-  --off-white: #1A1718;
-  --text-muted: rgba(26,23,24,0.52);
-  --border: rgba(45,102,104,0.22);
-  --row-hover: rgba(45,102,104,0.06);
-  --card-bg: rgba(0,0,0,0.04);
-  --r-franchise: #EF9F27;
-  --r-premier:   #7A5800;
-  --r-l3:        #3A8082;
-  --r-l2:        #1D5557;
-  --r-l1:        #0F7A52;
-  --r-combine:   #666666;
-  --r-nostatus:  rgba(26,23,24,0.3);
-  --btn-idle: #5A5755;
-  --btn-border-idle: rgba(90,87,85,0.45);
+  --cyan-light:      #1C1C1E;
+  --cyan-dark:       #1C1C1E;
+  --near-black:      #F0EDE8;
+  --sand:            #1C1C1E;
+  --wine:            #5C3D1E;
+  --off-white:       #1A1718;
+  --text-muted:      rgba(26,23,24,0.52);
+  --border:          rgba(0,0,0,0.10);
+  --row-hover:       rgba(0,0,0,0.03);
+  --card-bg:         rgba(0,0,0,0.04);
+  --r-franchise:     #EF9F27;
+  --r-premier:       #7A5800;
+  --r-l3:            #3A8082;
+  --r-l2:            #1D5557;
+  --r-l1:            #0F7A52;
+  --r-combine:       #666666;
+  --r-nostatus:      rgba(26,23,24,0.3);
+  --btn-idle:        #1C1C1E;
+  --btn-border-idle: rgba(28,28,30,0.30);
+  --v-exceeds:       #1C1C1E;
+  --v-exceeds-glow:  rgba(45,196,142,0.0);
   color-scheme: light;
 }
 body.light-mode { background: #E7E5E4; color: #1A1718; }
-/* ── Cards keep dark bg in light mode — force light text inside them ── */
+/* ── Overview progress cards — light bg, dark text ── */
 body.light-mode .prog-card,
 body.light-mode .prog-card .prog-cat,
 body.light-mode .prog-card .prog-num-val,
 body.light-mode .prog-card .prog-num-lbl,
-body.light-mode .prog-card .prog-ou { color: #F8F9F9; }
-body.light-mode .prog-card .prog-num-val.dim { color: rgba(248,249,249,0.5); }
-body.light-mode .prog-card .prog-track { background: rgba(255,255,255,0.08); }
-body.light-mode .prog-card .prog-tick { background: rgba(248,249,249,0.4); }
-body.light-mode .prog-card .prog-ou span.neg { color: #F05252; }
-body.light-mode .prog-card .prog-ou span.pos { color: #2DC48E; }
-body.light-mode .overview-target-input { color: #F8F9F9; }
-body.light-mode .roster-card { color: #F8F9F9; }
-body.light-mode .roster-card .rc-name { color: #F8F9F9; }
-body.light-mode .roster-card .rc-role { color: var(--cyan-light); }
+body.light-mode .prog-card .prog-ou { color: #1C1C1E; }
+body.light-mode .prog-card .prog-num-val.dim { color: rgba(28,28,30,0.35); }
+body.light-mode .prog-card .prog-track { background: rgba(0,0,0,0.10); }
+body.light-mode .prog-card .prog-tick { background: rgba(28,28,30,0.25); }
+body.light-mode .prog-card .prog-ou span.neg { color: #C0392B; }
+body.light-mode .prog-card .prog-ou span.pos { color: #0F7A52; }
+body.light-mode .prog-card .prog-num-val.dim { color: rgba(28,28,30,0.30); }
+body.light-mode .prog-ou-dim { color: rgba(28,28,30,0.40); }
+body.light-mode .overview-target-input { color: #1C1C1E; }
+/* ── Roster cards — light bg, dark text ── */
+body.light-mode .roster-card { color: #1C1C1E; }
+body.light-mode .roster-card .rc-name { color: #1C1C1E; }
+body.light-mode .roster-card .rc-role { color: #6E6E73; }
 body.light-mode .rc-edit-field { color: var(--off-white); background: rgba(0,0,0,0.08); }
 body.light-mode .search-wrap input { color: var(--off-white); background: rgba(0,0,0,0.08); }
 /* ── WTD GOALS PANEL ── */
@@ -176,6 +181,7 @@ body.light-mode .search-wrap input { color: var(--off-white); background: rgba(0
 .rm-stat { background:rgba(255,255,255,0.04); border:1px solid var(--border); padding:14px 16px; }
 .rm-stat-val { font-family:Helvetica Neue,Helvetica,Arial,sans-serif; font-size:26px; font-weight:700; color:var(--off-white); line-height:1; }
 .rm-stat-val.exceeds { color:var(--v-exceeds); text-shadow:0 0 10px var(--v-exceeds-glow); }
+body.light-mode .rm-stat-val.exceeds { color:#1C1C1E; font-weight:900; text-shadow:none; background:rgba(45,196,142,0.18); padding:2px 6px; }
 .rm-stat-val.nil { color:rgba(248,249,249,0.18); }
 .rm-stat-label { font-family:Helvetica Neue,Helvetica,Arial,sans-serif; font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-muted); margin-top:6px; }
 .rm-stat-goal { font-family:Helvetica Neue,Helvetica,Arial,sans-serif; font-size:10px; color:rgba(242,207,156,0.6); margin-top:2px; }
@@ -263,6 +269,8 @@ body.chrome-collapsed .tab-bar{max-height:0;opacity:0;border-bottom-color:transp
 .tab{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--btn-idle);padding:14px 22px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
 .tab:hover{color:var(--cyan-light)}
 .tab.active{color:var(--cyan-light);border-bottom-color:var(--cyan-light)}
+body.light-mode .tab:hover{color:#1C1C1E}
+body.light-mode .tab.active{color:#1C1C1E;border-bottom-color:#1C1C1E}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
@@ -316,10 +324,10 @@ body.chrome-collapsed .filter-bar{max-height:0;opacity:0;border-bottom-color:tra
 .filter-btn{background:transparent;border:1px solid var(--btn-border-idle);color:var(--btn-idle);padding:7px 16px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s}
 .filter-btn:hover{border-color:var(--cyan-light);color:var(--cyan-light)}
 .filter-btn.active{border-color:var(--cyan-light);color:var(--cyan-light);background:rgba(170,221,221,0.08)}
-body.light-mode .filter-btn.active{background:rgba(0,0,0,0.06);border-color:var(--cyan-light);color:var(--cyan-light)}
+body.light-mode .filter-btn{border-color:rgba(28,28,30,0.30);color:#1C1C1E}body.light-mode .filter-btn:hover{border-color:#1C1C1E;color:#1C1C1E;background:rgba(0,0,0,0.04)}body.light-mode .filter-btn.active{background:rgba(0,0,0,0.06);border-color:#1C1C1E;color:#1C1C1E}
 .view-btn{background:transparent;border:1px solid var(--btn-border-idle);color:var(--btn-idle);padding:7px 16px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s}
 .view-btn:hover,.view-btn.active{border-color:var(--sand);color:var(--sand);background:rgba(242,207,156,0.08)}
-body.light-mode .view-btn.active{background:rgba(0,0,0,0.06);border-color:var(--sand);color:var(--sand)}
+body.light-mode .view-btn{border-color:rgba(28,28,30,0.30);color:#1C1C1E}body.light-mode .view-btn:hover,body.light-mode .view-btn.active{border-color:#1C1C1E;color:#1C1C1E;background:rgba(0,0,0,0.06)}
 .filter-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
 .export-btn{display:flex;align-items:center;gap:7px;background:transparent;border:1px solid var(--btn-border-idle);color:var(--btn-idle);padding:7px 14px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s}
 .export-btn:hover{border-color:var(--cyan-light);color:var(--cyan-light)}
@@ -352,6 +360,7 @@ td{padding:13px 12px;color:var(--off-white);white-space:nowrap;font-size:14px}
 .td-num{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;font-weight:700;text-align:center}
 /* Three value states */
 .td-num.exceeds{color:var(--v-exceeds);font-weight:900;text-shadow:0 0 8px var(--v-exceeds-glow),0 0 16px rgba(39,217,217,0.3)}
+body.light-mode .td-num.exceeds{color:#1C1C1E;font-weight:900;text-shadow:none;background:rgba(45,196,142,0.18)}
 .td-num.pos{color:var(--off-white)}
 .td-num.neg{color:var(--sand)}
 .td-num.zero{color:rgba(248,249,249,0.2)}
@@ -380,7 +389,7 @@ body.light-mode .s-premier{border-color:rgba(122,88,0,.3);background:rgba(122,88
 
 /* ── GROUP HEADER ROWS ── */
 tr.group-header td{background:rgba(255,255,255,0.04);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan-light);padding:14px 18px;border-bottom:none;border-top:1px solid var(--border)}
-body.light-mode tr.group-header td{background:rgba(0,0,0,0.06);color:var(--cyan-dark);border-top-color:var(--border)}
+body.light-mode tr.group-header td{background:rgba(0,0,0,0.06);color:#1C1C1E;border-top-color:var(--border)}
 .col-header td{background:var(--near-black);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:clamp(9px,.85vw,11px);font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan-dark);padding:clamp(10px,1vw,16px) clamp(12px,1.1vw,18px);border-bottom:1px solid rgba(170,221,221,0.18);border-top:none;white-space:nowrap;cursor:pointer;user-select:none;transition:background .2s}
 .col-header td:hover{color:var(--cyan-light)}
 .col-header td span.sa{opacity:.4;margin-left:4px}
@@ -527,7 +536,10 @@ body.light-mode tr.group-header td{background:rgba(0,0,0,0.06);color:var(--cyan-
 .col-toggle-btn{display:flex;align-items:center;gap:6px;background:transparent;border:0.5px solid var(--btn-border-idle);color:var(--btn-idle);padding:7px 12px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
 .col-toggle-btn:hover{border-color:var(--cyan-light);color:var(--cyan-light);background:rgba(170,221,221,0.06)}
 .col-toggle-btn.open{border-color:var(--cyan-light);color:var(--cyan-light);background:rgba(170,221,221,0.08)}
-body.light-mode .col-toggle-btn.open{background:rgba(0,0,0,0.06);border-color:var(--cyan-light);color:var(--cyan-light)}
+body.light-mode .col-toggle-btn.open{background:rgba(0,0,0,0.06);border-color:#1C1C1E;color:#1C1C1E}
+/* Pod sub-headers: sand rgba invisible on light — force muted dark */
+body.light-mode tr.pod-sub-header td{background:rgba(0,0,0,0.03)!important;border-top-color:rgba(0,0,0,0.08)!important;border-bottom-color:rgba(0,0,0,0.05)!important}
+body.light-mode tr.pod-sub-header span{color:rgba(28,28,30,0.45)!important}
 .col-dropdown{position:absolute;right:0;top:calc(100% + 4px);background:var(--near-black);border:0.5px solid rgba(170,221,221,0.25);min-width:160px;z-index:200;padding:6px 0;display:none}
 .col-dropdown.open{display:block}
 .col-dropdown-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);transition:background .1s;white-space:nowrap}
@@ -663,6 +675,14 @@ body.chrome-collapsed .rankings-stats{max-height:0;opacity:0;border-bottom-color
   accent-color: var(--cyan-light); cursor: pointer; flex-shrink: 0;
 }
 .rk-chk-item.checked { color: var(--cyan-light); }
+/* ── Light mode: rankings dropdowns ── */
+body.light-mode .rk-chk-btn { background: rgba(0,0,0,0.04); border-color: rgba(28,28,30,0.25); color: #1C1C1E; }
+body.light-mode .rk-chk-btn::after { color: #1C1C1E; }
+body.light-mode .rk-chk-btn.active-filter { border-color: #1C1C1E; color: #1C1C1E; }
+body.light-mode .rk-chk-panel { background: #F5F5F7; border-color: rgba(28,28,30,0.15); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+body.light-mode .rk-chk-item { color: rgba(28,28,30,0.65); }
+body.light-mode .rk-chk-item:hover { background: rgba(0,0,0,0.05); color: #1C1C1E; }
+body.light-mode .rk-chk-item.checked { color: #1C1C1E; }
 
 /* Scope scrolling to the rankings panel so sticky thead works — overflow on ancestor breaks sticky */
 #panel-rankings.active{display:flex;flex-direction:column;height:calc(100vh - 111px);overflow:hidden;}
@@ -690,7 +710,7 @@ body.light-mode #panel-combine th{background:var(--near-black)}
 .combine-band-row th{padding:3px 12px 0;border:none;background:var(--near-black);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(0,0,0,0)}
 .combine-band-row th.wtd-band{color:rgba(170,221,221,0.55);border-bottom:1px solid rgba(170,221,221,0.25);padding-bottom:2px}
 body.light-mode .combine-band-row th{background:var(--near-black)}
-body.light-mode .combine-band-row th.wtd-band{color:var(--cyan-light);border-bottom-color:var(--border)}
+body.light-mode .combine-band-row th.wtd-band{color:#1C1C1E;border-bottom-color:var(--border)}
 /* Num+bar cell */
 .num-bar-cell{min-width:150px}
 .num-bar-wrap{display:flex;align-items:center;gap:7px}
@@ -766,6 +786,7 @@ body.light-mode .combine-band-row th.wtd-band{color:var(--cyan-light);border-bot
 /* ── FOOTER ── */
 .footer-bar{position:sticky;bottom:0;background:var(--near-black);border-top:1px solid var(--border);padding:11px 36px;display:flex;align-items:center;justify-content:space-between;transition:background .2s}
 .footer-count{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;color:var(--cyan-dark);text-transform:uppercase}
+body.light-mode .footer-count{color:#1C1C1E}
 .footer-brand{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:600;letter-spacing:3px;color:var(--text-muted);text-transform:uppercase}
 .empty-state{text-align:center;padding:60px 40px;color:var(--text-muted);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
 
@@ -961,8 +982,8 @@ body.light-mode .combine-band-row th.wtd-band{color:var(--cyan-light);border-bot
   }
 body.light-mode #panel-status-incentive .filter-btn.active{
     background: rgba(0,0,0,0.06);
-    border-color: var(--cyan-light);
-    color: var(--cyan-light);
+    border-color: #1C1C1E;
+    color: #1C1C1E;
   }
 #panel-status-incentive .search-wrap{
     margin-left: auto;
@@ -2257,7 +2278,7 @@ body.light-mode #panel-onboard-employee .dash-chip.active, body.light-mode /* Le
 
 <!-- ── POD SNAPSHOT MODAL ── -->
 <div id="pod-snapshot-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2100;align-items:center;justify-content:center;padding:24px;" onclick="if(event.target===this)closePodSnapshot()">
-  <div style="background:#0e0c0d;border:1px solid rgba(242,207,156,0.28);width:100%;max-width:520px;max-height:88vh;overflow:auto;position:relative;padding:24px 28px 20px;">
+  <div id="pod-snapshot-inner" style="background:#0e0c0d;border:1px solid rgba(242,207,156,0.28);width:100%;max-width:520px;max-height:88vh;overflow:auto;position:relative;padding:24px 28px 20px;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px;">
       <div>
         <div id="pod-snapshot-title" style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.3px;color:var(--sand)"></div>
@@ -2822,12 +2843,18 @@ function sqGoalWTD(k, members) {
   const ic  = members.reduce((s,e)=>s+(e.wtd_ic||0),0);
   const sraGoal = g.weekly_sra;
   const icGoal  = g.weekly_ic ?? Math.round(g.qtr_ic/13*10)/10;
+  const isLight = document.body.classList.contains('light-mode');
+  const cLbl  = isLight ? '#6E6E73'              : '#AADDDD';
+  const cVal  = isLight ? '#1C1C1E'              : '#F8F9F9';
+  const cSep  = isLight ? 'rgba(28,28,30,0.25)'  : 'rgba(248,249,249,.3)';
+  const cGoal = isLight ? '#1C1C1E'              : '#F2CF9C';
+  const cGlbl = isLight ? 'rgba(28,28,30,0.40)'  : 'rgba(242,207,156,.55)';
   const m = (lbl,actl,goal) => `<span style="margin-left:24px;display:inline-flex;align-items:baseline;gap:7px">
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;letter-spacing:2px;color:#AADDDD;font-weight:600">${lbl}</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;color:#F8F9F9;font-weight:600">${actl}</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(248,249,249,.3)">/</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:#F2CF9C">${goal}</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(242,207,156,.55)">goal</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;letter-spacing:2px;color:${cLbl};font-weight:600">${lbl}</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;color:${cVal};font-weight:600">${actl}</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:${cSep}">/</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:${cGoal}">${goal}</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:${cGlbl}">goal</span>
   </span>`;
   return label + m('SRA',sra,sraGoal) + m('IC',ic,icGoal);
 }
@@ -2840,17 +2867,24 @@ function sqGoalQTD(k, members) {
   const ic  = Math.round(members.reduce((s,e)=>s+(e.qtr_ic||0),0));
   const sraGoal = g.weekly_sra * 13;
   const icGoal  = g.qtr_ic;
+  const isLight = document.body.classList.contains('light-mode');
+  const cLbl  = isLight ? '#6E6E73'              : '#AADDDD';
+  const cVal  = isLight ? '#1C1C1E'              : '#F8F9F9';
+  const cSep  = isLight ? 'rgba(28,28,30,0.25)'  : 'rgba(248,249,249,.3)';
+  const cGoal = isLight ? '#1C1C1E'              : '#F2CF9C';
+  const cGlbl = isLight ? 'rgba(28,28,30,0.40)'  : 'rgba(242,207,156,.55)';
+  const cWtd  = isLight ? 'rgba(28,28,30,0.40)'  : 'rgba(170,221,221,.45)';
   const m = (lbl,actl,goal) => `<span style="margin-left:24px;display:inline-flex;align-items:baseline;gap:7px">
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;letter-spacing:2px;color:#AADDDD;font-weight:600">${lbl}</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;color:#F8F9F9;font-weight:600">${actl}</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:rgba(248,249,249,.3)">/</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:#F2CF9C">${goal}</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(242,207,156,.55)">goal</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;letter-spacing:2px;color:${cLbl};font-weight:600">${lbl}</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;color:${cVal};font-weight:600">${actl}</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:${cSep}">/</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:14px;color:${cGoal}">${goal}</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:${cGlbl}">goal</span>
   </span>`;
   const csChip = cs > 0 ? `<span style="margin-left:24px;display:inline-flex;align-items:baseline;gap:7px">
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;letter-spacing:2px;color:#AADDDD;font-weight:600">CS</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;color:#F8F9F9;font-weight:600">${cs}</span>
-    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(170,221,221,.45)">wtd</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;letter-spacing:2px;color:${cLbl};font-weight:600">CS</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:16px;color:${cVal};font-weight:600">${cs}</span>
+    <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:${cWtd}">wtd</span>
   </span>` : '';
   return label + csChip + m('SRA',sra,sraGoal) + m('IC',ic,icGoal);
 }
@@ -3215,7 +3249,7 @@ function buildProgressCard(cat, target, actual, pace, prefix){
     : `<span class="prog-pct" style="color:rgba(248,249,249,.3);background:transparent">—</span>`;
   const paceVal = hasPace
     ? `<span class="prog-num-val dim">${Math.round(pace)}</span>`
-    : `<span class="prog-num-val dim" style="color:rgba(248,249,249,.25)">—</span>`;
+    : `<span class="prog-num-val dim">—</span>`;
   // Pace indicator: +/- number only, colour carries the meaning
   const paceIndicator = hasPace ? (() => {
     const diff = actual - Math.round(pace);
@@ -3225,7 +3259,7 @@ function buildProgressCard(cat, target, actual, pace, prefix){
   })() : '';
   const ouLine = hasPace
     ? `<div class="prog-ou">Proj. Over/Under: <span class="${ou>=0?'pos':'neg'}">${ou>=0?'+':''}${ou}</span>${paceIndicator}</div>`
-    : `<div class="prog-ou" style="color:rgba(248,249,249,.25)">Set date to calculate pace</div>`;
+    : `<div class="prog-ou prog-ou-dim">Set date to calculate pace</div>`;
   return `<div class="prog-card">
     <div class="prog-card-header"><span class="prog-cat">${cat}</span>${pctBadge}</div>
     <div class="prog-nums">
@@ -4138,7 +4172,7 @@ function renderWTD(){
     if(r.isPodHeader){
       const safePod   = r.podName.replace(/'/g,"\\'");
       const safeSquad = (r.squadKey||'').replace(/'/g,"\\'");
-      return `<tr onclick="openPodSnapshot('${safePod}','${safeSquad}')" style="cursor:pointer;">
+      return `<tr class="pod-sub-header" onclick="openPodSnapshot('${safePod}','${safeSquad}')" style="cursor:pointer;">
         <td colspan="12" style="padding:5px 18px 5px 36px;background:rgba(242,207,156,0.03);border-top:1px solid rgba(242,207,156,0.1);border-bottom:1px solid rgba(242,207,156,0.07);">
           <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(242,207,156,0.6);">⬡ ${r.podName}</span>
           <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:rgba(242,207,156,0.28);margin-left:10px;">click for snapshot</span>
@@ -8743,7 +8777,9 @@ document.addEventListener('keydown', function(e) {
 
   /* Light mode adjustments */
   body.light-mode #panel-productivity { background: var(--bg); }
-  body.light-mode #panel-productivity .prod-name-row { background: rgba(35,31,32,0.04); color: var(--near-black); }
+  body.light-mode #panel-productivity .prod-name-row { background: rgba(35,31,32,0.04); color: #1C1C1E; }
+  body.light-mode #panel-productivity .prod-sra-badge { background: rgba(0,0,0,0.07); color: rgba(28,28,30,0.5); }
+  body.light-mode #panel-productivity .prod-sra-badge.sra-active { background: rgba(45,196,142,0.18); color: #0F7A52; }
   body.light-mode #panel-productivity .prod-name-row:hover { background: rgba(90,158,160,0.08); }
   body.light-mode #panel-productivity .prod-col-header.hdr-inactive { color: #fff; }
 </style>
@@ -9071,7 +9107,52 @@ function renderProductivity() {
     position: sticky; top: 0; z-index: 46;
     background: var(--near-black);
   }
-  body.light-mode #assists-table thead th { background: var(--near-black); }
+  body.light-mode #assists-table thead th { background: var(--near-black); color: #1C1C1E; }
+
+/* ── Light mode: all modals keep dark bg — force light text inside ── */
+body.light-mode #assists-modal,
+body.light-mode #rep-modal,
+body.light-mode #squad-snapshot-inner,
+body.light-mode #pod-snapshot-inner,
+body.light-mode #wtd-goals-panel { background: #1a1718 !important; }
+body.light-mode #pod-snapshot-inner,
+body.light-mode #pod-snapshot-inner * { color: #F5F5F7; }
+body.light-mode #pod-snapshot-inner #pod-snapshot-title { color: var(--r-franchise); }
+
+body.light-mode #assists-modal *,
+body.light-mode #rep-modal *,
+body.light-mode #squad-snapshot-inner *,
+body.light-mode #wtd-goals-panel * { color: inherit; }
+
+/* Specific text elements inside dark modals */
+body.light-mode .am-header,
+body.light-mode .am-sup,
+body.light-mode .am-name,
+body.light-mode .am-count-line,
+body.light-mode .am-row-num,
+body.light-mode .am-row-name { color: #F5F5F7; }
+body.light-mode .am-count-line span { color: #27d9d9; }
+body.light-mode .am-close-btn { color: rgba(248,249,249,0.5); border-color: rgba(170,221,221,0.12); }
+body.light-mode .am-close-btn:hover { color: #F5F5F7; }
+body.light-mode .am-row { border-bottom-color: rgba(170,221,221,0.07); }
+
+body.light-mode #rep-modal .rm-name,
+body.light-mode #rep-modal .rm-stat-label,
+body.light-mode #rep-modal .rm-stat-val,
+body.light-mode #rep-modal .rm-section-label,
+body.light-mode #rep-modal .rm-field-label,
+body.light-mode #rep-modal .rm-field-val { color: #F5F5F7; }
+
+body.light-mode #squad-snapshot-inner #squad-snapshot-title,
+body.light-mode #squad-snapshot-inner #squad-snapshot-subtitle,
+body.light-mode #squad-snapshot-inner td,
+body.light-mode #squad-snapshot-inner th { color: #F5F5F7; }
+body.light-mode #squad-snapshot-inner thead tr { border-bottom-color: rgba(170,221,221,0.2); }
+body.light-mode #squad-snapshot-inner tbody tr { border-bottom-color: rgba(170,221,221,0.07); }
+
+body.light-mode #wtd-goals-panel .goals-field-label,
+body.light-mode #wtd-goals-panel .goals-field-sub,
+body.light-mode #wtd-goals-panel .goals-field-input { color: #F5F5F7; }
 
   #panel-assists .assists-stats {
     display: grid; grid-template-columns: repeat(4, 1fr);
@@ -9231,6 +9312,7 @@ function renderProductivity() {
       <tr>
         <th style="width:48px" onclick="assistsSort('rank')"># <span class="sa">&#8597;</span></th>
         <th onclick="assistsSort('name')">Rep Name <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('metric')" style="width:70px">Type <span class="sa">&#8597;</span></th>
         <th onclick="assistsSort('count')">Assists <span class="sa">&#8597;</span></th>
         <th onclick="assistsSort('unique')">Unique CS Reps <span class="sa">&#8597;</span></th>
       </tr>
@@ -9262,144 +9344,137 @@ function renderProductivity() {
 
 
 <script>
-// ── ASSISTS TAB DATA ──────────────────────────────────────────────────────────
-const ASSIST_DATA = [
-  {name: 'Chase Hermansen', count: 46, cs_reps: ["Jovanni Cornejo", "Caden Martin", "Ellie Cole", "Adam Clark", "Adam Clark", "Evan Flynn", "Adam Clark", "Briana Garcia", "Ryan Baker", "Derrick Disbrow", "Devin Poe", "Adam Clark", "Adam Clark", "Mohamed Elbarbary", "Adam Clark", "Pablo Torres Garcia", "Richard Carriere", "Kerrie Carriere", "Tyler Criddle", "Seyenna Mello", "Tyler Criddle", "Evan Flynn", "Tyler Criddle", "Ellie Cole", "Jovanni Cornejo", "Pablo Torres Garcia", "Briana Garcia", "Devin Poe", "Derrick Disbrow", "Caden Martin", "Ryan Baker", "Seyenna Mello", "Adam Clark", "Adam Clark", "Adam Clark", "Adam Clark", "Adam Clark", "Adam Clark", "Mohamed Elbarbary", "Tyler Criddle", "Tyler Criddle", "Tyler Criddle", "Evan Flynn", "Evan Flynn", "Richard Carriere", "Kerrie Carriere"]},
-  {name: 'Spencer Haws', count: 42, cs_reps: ["Brooke Ashley", "Brooke Ashley", "Adam Clark", "Seyenna Mello", "Nevaeh Olson", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Nevaeh Olson", "Brooke Ashley", "Derrick Disbrow", "Rod Grajales", "Derrick Disbrow", "Derrick Disbrow", "Nevaeh Olson", "Derrick Disbrow", "Brooke Ashley", "Brooke Ashley", "Brooke Ashley", "Brooke Ashley", "Nevaeh Olson", "Nevaeh Olson", "Nevaeh Olson", "Rod Grajales", "Brooke Ashley", "Brooke Ashley", "Brooke Ashley", "Brooke Ashley", "Brooke Ashley", "Brooke Ashley", "Brooke Ashley", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Derrick Disbrow", "Seyenna Mello", "Adam Clark"]},
-  {name: 'Tucker Criddle', count: 42, cs_reps: ["Chase Hermansen", "Chris Pham", "Briana Garcia", "Brock Parrish", "Brock Parrish", "Chase Stenzel", "Adam Clark", "Brock Parrish", "Austin Lindsay", "Evan Flynn", "Briana Garcia", "Caden Martin", "Chris Pham", "Justin Pinto", "Austin Lindsay", "Evan Flynn", "Tyler Criddle", "Brock Parrish", "Justin Pinto", "Austin Lindsay", "Austin Lindsay", "Tyler Criddle", "Austin Lindsay", "Katie Jones", "Chase Stenzel", "Chase Hermansen", "Chase Stenzel", "Chase Stenzel", "Austin Lindsay", "Austin Lindsay", "Austin Lindsay", "Austin Lindsay", "Austin Lindsay", "Caden Martin", "Adam Clark", "Tyler Criddle", "Tyler Criddle", "Justin Pinto", "Justin Pinto", "Evan Flynn", "Evan Flynn", "Katie Jones"]},
-  {name: 'Kendl Hansen', count: 32, cs_reps: ["Victor Martinez", "Malik Colossio Lopez", "Malik Colossio Lopez", "Victor Martinez", "Jameson Perreault", "Jameson Perreault", "Ivan Stone", "Malik Colossio Lopez", "Alexander Doig", "Katie Jones", "Alexander Doig", "Ivan Stone", "Albert Barba", "Jameson Perreault", "Evan Broudy", "Alexander Doig", "Malik Colossio Lopez", "Malik Colossio Lopez", "Malik Colossio Lopez", "Victor Martinez", "Victor Martinez", "Evan Broudy", "Alexander Doig", "Alexander Doig", "Alexander Doig", "Albert Barba", "Jameson Perreault", "Jameson Perreault", "Jameson Perreault", "Ivan Stone", "Ivan Stone", "Katie Jones"]},
-  {name: 'Ralph Holding', count: 28, cs_reps: ["Ryan Baker", "Sean Whalen Jr", "Devin Poe", "Bryce Davis", "Justin Pinto", "Bryce Davis", "Bryce Davis", "Justin Pinto", "Chase Stenzel", "Evan Flynn", "Justin Pinto", "Nathaniel Williams", "Austin Lindsay", "Austin Lindsay", "Sean Whalen Jr", "Chase Stenzel", "Devin Poe", "Austin Lindsay", "Austin Lindsay", "Ryan Baker", "Nathaniel Williams", "Justin Pinto", "Justin Pinto", "Justin Pinto", "Evan Flynn", "Bryce Davis", "Bryce Davis", "Bryce Davis"]},
-  {name: 'Hector Navarro', count: 24, cs_reps: ["Mohamed Elbarbary", "Mohamed Elbarbary", "Mohamed Elbarbary", "Jovanni Cornejo", "Caden Martin", "Mohamed Elbarbary", "Jovanni Cornejo", "Jovanni Cornejo", "Mohamed Elbarbary", "Mohamed Elbarbary", "Jovanni Cornejo", "Caden Martin", "Jovanni Cornejo", "Jovanni Cornejo", "Jovanni Cornejo", "Jovanni Cornejo", "Caden Martin", "Caden Martin", "Mohamed Elbarbary", "Mohamed Elbarbary", "Mohamed Elbarbary", "Mohamed Elbarbary", "Mohamed Elbarbary", "Mohamed Elbarbary"]},
-  {name: 'Preston Thompson', count: 24, cs_reps: ["Szymon Szymczyk", "Szymon Szymczyk", "Szymon Szymczyk", "Derrick Disbrow", "Ellie Cole", "Szymon Szymczyk", "Julia Brucato", "Szymon Szymczyk", "Szymon Szymczyk", "Szymon Szymczyk", "Jameson Perreault", "Julia Brucato", "Ellie Cole", "Julia Brucato", "Julia Brucato", "Derrick Disbrow", "Szymon Szymczyk", "Szymon Szymczyk", "Szymon Szymczyk", "Szymon Szymczyk", "Szymon Szymczyk", "Szymon Szymczyk", "Szymon Szymczyk", "Jameson Perreault"]},
-  {name: 'Walter Schumacher', count: 20, cs_reps: ["Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Colby Degele", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Phillip Ho", "Colby Degele"]},
-  {name: 'Jaxon Junior', count: 18, cs_reps: ["Ralph Holding", "Justin Pinto", "Hunter Floyd", "Richard Carriere", "Heidi Bryant", "Hunter Floyd", "Christian Blaser", "Chase Blaser", "Christian Blaser", "Ralph Holding", "Justin Pinto", "Hunter Floyd", "Hunter Floyd", "Christian Blaser", "Christian Blaser", "Heidi Bryant", "Richard Carriere", "Chase Blaser"]},
-  {name: 'Lafe Frandsen', count: 16, cs_reps: ["Chase Hermansen", "Devin Poe", "Brant Anderson", "Pablo Torres Garcia", "Brant Anderson", "Brant Anderson", "Pablo Torres Garcia", "Brant Anderson", "Chase Hermansen", "Pablo Torres Garcia", "Pablo Torres Garcia", "Devin Poe", "Brant Anderson", "Brant Anderson", "Brant Anderson", "Brant Anderson"]},
-  {name: 'John Woodfield', count: 14, cs_reps: ["Peter Anthony", "Erin Dominguez", "Pablo Torres Garcia", "Pablo Torres Garcia", "Memphis Day", "Malik Colossio Lopez", "Colby Degele", "Erin Dominguez", "Pablo Torres Garcia", "Pablo Torres Garcia", "Malik Colossio Lopez", "Peter Anthony", "Memphis Day", "Colby Degele"]},
-  {name: 'Chad Towersey', count: 12, cs_reps: ["Maxx Hickey", "Maxx Hickey", "Robert Kobetsky", "Memphis Day", "Memphis Day", "Robert Kobetsky", "Maxx Hickey", "Maxx Hickey", "Robert Kobetsky", "Robert Kobetsky", "Memphis Day", "Memphis Day"]},
-  {name: 'Krystal Rodriguez', count: 12, cs_reps: ["Qun Wang", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Ambyr Evans", "Qun Wang"]},
-  {name: 'Erin Dominguez', count: 10, cs_reps: ["Maxx Hickey", "Maxx Hickey", "Maxx Hickey", "Alexander Doig", "Maxx Hickey", "Maxx Hickey", "Maxx Hickey", "Maxx Hickey", "Maxx Hickey", "Alexander Doig"]},
-  {name: 'Julia Brucato', count: 10, cs_reps: ["Chase Hermansen", "Chase Hermansen", "Chase Hermansen", "Preston Thompson", "Preston Thompson", "Preston Thompson", "Preston Thompson", "Preston Thompson", "Chase Hermansen", "Preston Thompson"]},
-  {name: 'Louie Gutierrez', count: 10, cs_reps: ["Jaime Reynoso", "Jden Burmaster", "Landon Crowhurst", "Landon Crowhurst", "Landon Crowhurst", "Jaime Reynoso", "Jden Burmaster", "Landon Crowhurst", "Landon Crowhurst", "Landon Crowhurst"]},
-  {name: 'Kenny Roberts', count: 8, cs_reps: ["Derrick Disbrow", "Derrick Disbrow", "Justin Pinto", "Tyler Criddle", "Derrick Disbrow", "Derrick Disbrow", "Tyler Criddle", "Justin Pinto"]},
-  {name: 'Malik Animashaun', count: 8, cs_reps: ["Briana Garcia", "Briana Garcia", "Chris Pham", "Jovanni Cornejo", "Chris Pham", "Jovanni Cornejo", "Briana Garcia", "Briana Garcia"]},
-  {name: 'Max Redfield', count: 8, cs_reps: ["Thomas Kellogg", "Laheim Wallace", "Laheim Wallace", "Laheim Wallace", "Laheim Wallace", "Laheim Wallace", "Laheim Wallace", "Thomas Kellogg"]},
-  {name: 'Pedro Cruz', count: 7, cs_reps: ["Oscar Zavala", "Oscar Zavala", "Oscar Zavala", "Gustavo Lozano Sanchez", "Gustavo Lozano Sanchez", "Gustavo Lozano Sanchez", "Jerry Ramos"]},
-  {name: 'Bradley Kicinski', count: 6, cs_reps: ["Tyson Wickline", "Tyson Wickline", "Tyson Wickline", "Tyson Wickline", "Tyson Wickline", "Tyson Wickline"]},
-  {name: 'Greg Abdouch', count: 6, cs_reps: ["Tyson Wickline", "Cairo Michael", "Cairo Michael", "Tyson Wickline", "Cairo Michael", "Cairo Michael"]},
-  {name: 'Hunter Thompson', count: 5, cs_reps: ["Preston Thompson", "Preston Thompson", "Preston Thompson", "Preston Thompson", "Preston Thompson"]},
-  {name: 'Qun Wang', count: 5, cs_reps: ["Wei Wang", "Wei Wang", "Wei Wang", "Wei Wang", "Yi Hsing Hsia"]},
-  {name: 'Rod Grajales', count: 5, cs_reps: ["Seyenna Mello", "Seyenna Mello", "Seyenna Mello", "Seyenna Mello", "Seyenna Mello"]},
-  {name: 'Argelia Leanos', count: 4, cs_reps: ["Michael Durr", "Michael Durr", "Michael Durr", "Michael Durr"]},
-  {name: 'Giovanni Rivas', count: 4, cs_reps: ["Saul Hernandez", "Saul Hernandez", "Saul Hernandez", "Saul Hernandez"]},
-  {name: 'Gustavo Lozano Sanchez', count: 4, cs_reps: ["Pedro Cruz", "Laura Cardenas", "Oscar Zavala", "Jerry Ramos"]},
-  {name: 'Caleb Heward', count: 3, cs_reps: ["Kenny Roberts", "Kenny Roberts", "Kenny Roberts"]},
-  {name: 'Oscar Zavala', count: 3, cs_reps: ["Jeremy Martinez", "Jeremy Martinez", "Laura Cardenas"]},
-  {name: 'Brian Barczak', count: 2, cs_reps: ["Maxx Hickey", "Maxx Hickey"]},
-  {name: 'Cameron West', count: 2, cs_reps: ["Kendl Hansen", "Kendl Hansen"]},
-  {name: 'Colby Rankin', count: 2, cs_reps: ["Alexander Doig", "Enoch Brookins-yisrael"]},
-  {name: 'Daniel Rios', count: 2, cs_reps: ["Chase Hermansen", "Chase Hermansen"]},
-  {name: 'Diego Zamora', count: 2, cs_reps: ["Spencer Haws", "Spencer Haws"]},
-  {name: 'Ellie Cole', count: 2, cs_reps: ["Chase Hermansen", "Chase Hermansen"]},
-  {name: 'Evan Flynn', count: 2, cs_reps: ["Chase Hermansen", "Tucker Criddle"]},
-  {name: 'Jaden Biggs', count: 2, cs_reps: ["Ralph Holding", "Ralph Holding"]},
-  {name: 'Jeremy Martinez', count: 2, cs_reps: ["Tyson Wickline", "Tyson Wickline"]},
-  {name: 'Philip Vierhus', count: 2, cs_reps: ["Ambyr Evans", "Mike Miclea"]},
-  {name: 'Richard Ellis', count: 2, cs_reps: ["Richard Bosley", "Richard Bosley"]},
-  {name: 'Thomas Norman', count: 2, cs_reps: ["Adrian Rodriguez", "Adrian Rodriguez"]},
-  {name: 'Tyler Criddle', count: 2, cs_reps: ["Lafe Frandsen", "Ralph Holding"]},
-  {name: 'Wei Wang', count: 2, cs_reps: ["Qun Wang", "Qun Wang"]},
-  {name: 'Zach Harbin', count: 2, cs_reps: ["Erik Oh", "Erik Oh"]},
-  {name: 'Adam Clark', count: 1, cs_reps: ["Tucker Criddle"]},
-  {name: 'Adan Vazquez', count: 1, cs_reps: ["Gustavo Lozano Sanchez"]},
-  {name: 'Alec Lowry', count: 1, cs_reps: ["Chase Hermansen"]},
-  {name: 'Brant Anderson', count: 1, cs_reps: ["Chase Hermansen"]},
-  {name: 'Brian Arriaga', count: 1, cs_reps: ["Joshua Ruiz"]},
-  {name: 'Brooke Ashley', count: 1, cs_reps: ["Spencer Haws"]},
-  {name: 'Bryce Davis', count: 1, cs_reps: ["Ralph Holding"]},
-  {name: 'Cam Smith', count: 1, cs_reps: ["David Price"]},
-  {name: 'Charles Josey', count: 1, cs_reps: ["Francisco Flores"]},
-  {name: 'David Maldonado', count: 1, cs_reps: ["Nevin Schwebs"]},
-  {name: 'Ikeem Clay', count: 1, cs_reps: ["Landon Crowhurst"]},
-  {name: 'Isaac Vance', count: 1, cs_reps: ["Tucker Criddle"]},
-  {name: 'Jameson Perreault', count: 1, cs_reps: ["Kendl Hansen"]},
-  {name: 'Jerry Ramos', count: 1, cs_reps: ["Russell Dean"]},
-  {name: 'Joseph Rodas', count: 1, cs_reps: ["Pedro Cruz"]},
-  {name: 'Josh Fairhurst', count: 1, cs_reps: ["Ikeem Clay"]},
-  {name: 'Jovanni Cornejo', count: 1, cs_reps: ["Kenny Roberts"]},
-  {name: 'Justin Pinto', count: 1, cs_reps: ["Kenny Roberts"]},
-  {name: 'Key Goins', count: 1, cs_reps: ["Malik Animashaun"]},
-  {name: 'Korron Walker', count: 1, cs_reps: ["Chase Hermansen"]},
-  {name: 'Lisbel Benito', count: 1, cs_reps: ["Ikeem Clay"]},
-  {name: 'Michael Durr', count: 1, cs_reps: ["Argelia Leanos"]},
-  {name: 'Naim Harris', count: 1, cs_reps: ["Spencer Haws"]},
-  {name: 'Saul Hernandez', count: 1, cs_reps: ["Giovanni Rivas"]},
-  {name: 'Seyenna Mello', count: 1, cs_reps: ["Chase Hermansen"]},
-  {name: 'Spring Saunders', count: 1, cs_reps: ["Ellie Cole"]},
-  {name: 'Trevor Bryant', count: 1, cs_reps: ["Gerardo Sanchez"]},
-  {name: 'Tyler Sheesley', count: 1, cs_reps: ["Russell Dean"]},
-];
+
 
 // ── ASSISTS TAB LOGIC ─────────────────────────────────────────────────────────
-let _assistsSortKey = 'count';
-let _assistsSortDir = -1;
+// buildAssistData() computes ASSIST_DATA live from INSTALL_LIST (Google Sheets).
+// Called at the top of renderAssistsTab() so data is always current.
+
+function buildAssistData() {
+  var byMetric = {};
+  INSTALL_LIST.forEach(function(r) {
+    var name   = (r['assist name']   || '').trim();
+    var metric = (r['metric']        || '').trim().toUpperCase();
+    var csRep  = (r['cs rep name']   || '').trim();
+    if (!name || !metric || (metric !== 'SRA' && metric !== 'IC')) return;
+    if (!byMetric[name]) byMetric[name] = {};
+    if (!byMetric[name][metric]) byMetric[name][metric] = [];
+    if (csRep) byMetric[name][metric].push(csRep);
+  });
+
+  // Compute halved counts and combined totals per rep
+  var repTotals = {};
+  Object.keys(byMetric).forEach(function(name) {
+    var total = 0;
+    Object.keys(byMetric[name]).forEach(function(metric) {
+      total += Math.ceil(byMetric[name][metric].length / 2);
+    });
+    repTotals[name] = total;
+  });
+
+  // Sort reps by combined total desc
+  var sortedNames = Object.keys(repTotals).sort(function(a, b) {
+    return repTotals[b] - repTotals[a];
+  });
+
+  // Build flat rows: SRA then IC per rep
+  var rows = [];
+  var rank = 1;
+  sortedNames.forEach(function(name) {
+    ['SRA', 'IC'].forEach(function(metric) {
+      var csReps = byMetric[name][metric];
+      if (!csReps || !csReps.length) return;
+      var count  = Math.ceil(csReps.length / 2);
+      var unique = (new Set(csReps)).size;
+      rows.push({
+        name: name, metric: metric, count: count,
+        unique: unique, cs_reps: csReps,
+        rep_total: repTotals[name], rank: rank
+      });
+    });
+    rank++;
+  });
+  return rows;
+}
+
+let _assistsSortKey = 'rank';
+let _assistsSortDir = 1;
 
 function assistsSort(key) {
   if (_assistsSortKey === key) { _assistsSortDir *= -1; }
-  else { _assistsSortKey = key; _assistsSortDir = key === 'name' ? 1 : -1; }
+  else { _assistsSortKey = key; _assistsSortDir = (key === 'name' || key === 'metric') ? 1 : -1; }
   renderAssistsTab();
 }
 
 function renderAssistsTab() {
+  const ASSIST_DATA = buildAssistData();
   const searchEl = document.getElementById('assists-search');
   const search = searchEl ? searchEl.value.trim().toLowerCase() : '';
 
-  const data = ASSIST_DATA.map((d, i) => ({
-    ...d, rank: i + 1, unique: [...new Set(d.cs_reps)].length
-  }));
-
-  // Stats from full dataset
-  const totalAssists = data.reduce((s, d) => s + d.count, 0);
-  const totalReps    = data.length;
-  const topRep       = data[0];
-  const avg          = totalReps ? Math.round(totalAssists / totalReps) : 0;
+  // Stats — unique reps only
+  const seen = new Set();
+  let totalAssists = 0, totalReps = 0, topName = '', topTotal = 0;
+  ASSIST_DATA.forEach(d => {
+    totalAssists += d.count;
+    if (!seen.has(d.name)) {
+      seen.add(d.name);
+      totalReps++;
+      if (d.rep_total > topTotal) { topTotal = d.rep_total; topName = d.name; }
+    }
+  });
+  const avg = totalReps ? Math.round(totalAssists / totalReps) : 0;
 
   const el = id => document.getElementById(id);
   if (el('assists-stat-total'))     el('assists-stat-total').textContent     = totalAssists;
   if (el('assists-stat-reps'))      el('assists-stat-reps').textContent      = totalReps;
-  if (el('assists-stat-top-name'))  el('assists-stat-top-name').textContent  = topRep ? topRep.name : '—';
-  if (el('assists-stat-top-count')) el('assists-stat-top-count').textContent = topRep ? topRep.count + ' assists' : '';
+  if (el('assists-stat-top-name'))  el('assists-stat-top-name').textContent  = topName || '—';
+  if (el('assists-stat-top-count')) el('assists-stat-top-count').textContent = topName ? topTotal + ' assists' : '';
   if (el('assists-stat-avg'))       el('assists-stat-avg').textContent       = avg;
 
-  let filtered = search ? data.filter(d => d.name.toLowerCase().includes(search)) : data;
+  let data = ASSIST_DATA.slice();
+  if (search) data = data.filter(d => d.name.toLowerCase().includes(search));
 
-  filtered.sort((a, b) => {
-    let va = a[_assistsSortKey], vb = b[_assistsSortKey];
+  data.sort((a, b) => {
+    const key = _assistsSortKey;
+    if (key === 'rank') {
+      // Primary: rank asc (already encodes combined total), secondary: SRA before IC
+      if (a.rank !== b.rank) return (a.rank - b.rank) * _assistsSortDir;
+      if (a.name !== b.name) return a.name < b.name ? -_assistsSortDir : _assistsSortDir;
+      return a.metric === 'SRA' ? -1 : 1;
+    }
+    let va = a[key], vb = b[key];
     if (typeof va === 'string') va = va.toLowerCase();
     if (typeof vb === 'string') vb = vb.toLowerCase();
     if (va < vb) return -1 * _assistsSortDir;
     if (va > vb) return  1 * _assistsSortDir;
-    return 0;
+    // Tiebreak: preserve original grouped order
+    if (a.rank !== b.rank) return a.rank - b.rank;
+    return a.metric === 'SRA' ? -1 : 1;
   });
 
-  // Sort indicator
   document.querySelectorAll('#assists-table th').forEach(th => th.classList.remove('sorted'));
-  const keyIdx = {rank: 0, name: 1, count: 2, unique: 3};
+  const keyIdx = {rank: 0, name: 1, metric: 2, count: 3, unique: 4};
   const ths = document.querySelectorAll('#assists-table th');
   if (ths[keyIdx[_assistsSortKey]]) ths[keyIdx[_assistsSortKey]].classList.add('sorted');
 
-  const maxCount = ASSIST_DATA[0] ? ASSIST_DATA[0].count : 1;
+  const maxCount = ASSIST_DATA.length ? Math.max(...ASSIST_DATA.map(d => d.count)) : 1;
   const tbody = document.getElementById('assists-tbody');
   if (!tbody) return;
 
   tbody.innerHTML = '';
-  filtered.forEach((d, i) => {
+  data.forEach((d, i) => {
     const pct = Math.round((d.count / maxCount) * 100);
+    const isSRA = d.metric === 'SRA';
+    const badgeColor = isSRA ? 'var(--r-l3)'              : 'var(--r-l1)';
+    const badgeBg    = isSRA ? 'rgba(90,158,160,0.10)'    : 'rgba(45,196,142,0.10)';
+    const badgeBdr   = isSRA ? 'rgba(90,158,160,0.35)'    : 'rgba(45,196,142,0.35)';
     const tr = document.createElement('tr');
-    tr.style.animationDelay = Math.min(i * 0.01, 0.3) + 's';
+    tr.style.animationDelay = Math.min(i * 0.008, 0.3) + 's';
     tr.onclick = () => openAssistsModal(d);
     tr.innerHTML =
       '<td style="color:var(--text-muted);font-size:12px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif">' + d.rank + '</td>' +
       '<td style="font-weight:600;font-size:15px">' + d.name + '</td>' +
+      '<td><span style="display:inline-block;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border:1px solid ' + badgeBdr + ';color:' + badgeColor + ';background:' + badgeBg + '">' + d.metric + '</span></td>' +
       '<td><div class="assists-bar-wrap">' +
         '<div class="assists-bar-track"><div class="assists-bar-fill" style="width:' + pct + '%"></div></div>' +
         '<span class="assists-count-val">' + d.count + '</span>' +
@@ -9408,15 +9483,16 @@ function renderAssistsTab() {
     tbody.appendChild(tr);
   });
 
+  const uniqueReps = new Set(data.map(d => d.name)).size;
   const fc = document.getElementById('assists-footer-count');
-  if (fc) fc.textContent = filtered.length + ' rep' + (filtered.length !== 1 ? 's' : '');
+  if (fc) fc.textContent = uniqueReps + ' rep' + (uniqueReps !== 1 ? 's' : '') + ' · ' + data.length + ' rows';
 }
 
 function openAssistsModal(d) {
   const overlay = document.getElementById('assists-modal-overlay');
   if (!overlay) return;
   document.getElementById('am-name').textContent  = d.name;
-  document.getElementById('am-count').textContent = d.count;
+  document.getElementById('am-count').textContent = d.count + ' ' + d.metric + ' assists';
 
   const listEl = document.getElementById('am-list');
   listEl.innerHTML = '';
