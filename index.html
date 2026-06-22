@@ -5849,17 +5849,33 @@ function ob_sendToRoster(id) {
   emp.status = 'Hired';
   if (emp._sheetRow) sheetsWriteCell('Onboarding', emp._sheetRow, OB_COL.status, 'Hired');
   const newRep = {
-    id:     emp.repId || ('ob_' + Date.now()),
-    name:   ob_cap(emp.name),
-    office: emp.office || '',
-    squad:  emp.squad  || '',
-    role:   'Sales Manager',
-    mobile: emp.mobile || '',
-    email:  emp.homeEmail || '',
-    status: 'Active'
+    id:        emp.repId || ('ob_' + Date.now()),
+    name:      ob_cap(emp.name),
+    role:      'Sales Manager',
+    office:    emp.office    || '',
+    squad:     emp.squad     || '',
+    pod:       '',
+    mobile:    emp.mobile    || '',
+    email:     emp.homeEmail || '',
+    address:   emp.address   || '',
+    recruiter: emp.referral  || '',
+    status:    'Active'
   };
   ROSTER_EMPLOYEES.unshift(newRep);
-  var rosterRow = [newRep.id, newRep.name, newRep.role, newRep.office, newRep.squad, newRep.mobile, newRep.email, ''];
+  // Roster sheet columns: Employee ID, Name, Role, Office, Squad, Pod, Mobile, Email, Address, Recruiter, Training_Room
+  var rosterRow = [
+    newRep.id,
+    newRep.name,
+    newRep.role,
+    newRep.office,
+    newRep.squad,
+    newRep.pod,
+    newRep.mobile,
+    newRep.email,
+    newRep.address,
+    newRep.recruiter,
+    ''  // Training_Room — not available in Onboarding data
+  ];
   sheetsAppendRow('Roster', rosterRow).then(function(ok) {
     if (ok) showSyncBanner('✓ ' + newRep.name + ' added to Roster');
   });
