@@ -7660,7 +7660,10 @@ async function fetchSheetsData(opts) {
     if (exRows.length) { rankingsData = exRows; RANKINGS_MAP = Object.fromEntries(exRows.map(function(r){ return [r.id, {title:r.title, currentRank:r.currentRank, highestRank:r.highestRank}]; })); }
   } catch(e) { errors.push('Export: ' + e.message); }
 
-  // ── Report (WTD AC/Knocks/Pitches) ──────────────────────────────────────────
+  // ── Report (WTD AC/SRA/CAP/IC/Knocks/Pitches) ────────────────────────────────
+  // SRA/CAP/IC week values now come from this tab (sras/caps/installs columns)
+  // instead of QTD Points, per QTD Points reliability issues. If this fetch
+  // fails, wtd_sra/wtd_cap/wtd_ic simply retain whatever QTD Points set above.
   try {
     var rpRes = await fetchWithTimeout(sheetsUrl('Report'));
     if (!rpRes.ok) throw new Error('HTTP ' + rpRes.status);
@@ -7670,6 +7673,9 @@ async function fetchSheetsData(opts) {
       var wtd = WTD_MAP[id];
       if (wtd) {
         wtd.wtd_ac        = csvNum(r['acs']);
+        wtd.wtd_sra       = csvNum(r['sras']);
+        wtd.wtd_cap       = csvNum(r['caps']);
+        wtd.wtd_ic        = csvNum(r['installs']);
         wtd.pitches       = csvNum(r['pitches']);
         wtd.knocks        = csvNum(r['knocks']);
         wtd.hours_knocked = csvNum(r['hours knocked']);
@@ -7677,7 +7683,9 @@ async function fetchSheetsData(opts) {
         var ro = (rosterById && rosterById[id]) || {};
         var newEntry = { id, name: ro.name||id, squad: ro.squad||'', office: ro.office||'', status: ro.status||'',
           wtd_ac: csvNum(r['acs']), pitches: csvNum(r['pitches']), knocks: csvNum(r['knocks']),
-          hours_knocked: csvNum(r['hours knocked']), wtd_cs:0, wtd_wc:0, wtd_sra:0, wtd_cap:0, wtd_ic:0, qtr_status:'' };
+          hours_knocked: csvNum(r['hours knocked']), wtd_cs:0, wtd_wc:0,
+          wtd_sra: csvNum(r['sras']), wtd_cap: csvNum(r['caps']), wtd_ic: csvNum(r['installs']),
+          qtr_status:'' };
         WTD_EMPLOYEES.push(newEntry);
         WTD_MAP[id] = newEntry;
       }
