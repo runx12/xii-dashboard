@@ -2573,6 +2573,7 @@ let ROSTER_EMPLOYEES   = []; // Populated from Google Sheets on load
 let COMBINE2_EMPLOYEES = []; // Populated from Google Sheets
 let NEW_HIRE_EMPLOYEES = []; // Populated from Google Sheets
 let INSTALL_LIST       = []; // Populated from Google Sheets — Install List tab (self gen calc)
+let QTD_ASSISTS_LIST   = []; // Populated from Google Sheets — QTD_Assists tab (one row per rep, pre-totaled)
 let CLOSED_DEALS_MAP   = {}; // Keyed by rep ID — closed deal tally counter (New Hires)
 let REP_DETAIL_MAP     = {}; // Keyed by employee ID — populated by Rep Detail tab
 let GC_EMPLOYEES       = []; // Populated from Google Sheets — Game Changers tab
@@ -7472,6 +7473,36 @@ function squadRowToEntry(r) {
   };
 }
 
+// Sheet headers: Employee ID, Rep Name, Office, Region, AC, CS, WC, SRA, CAP, IC, PTO
+// Every metric column on this tab is an assist count, already finalized by the
+// sheet owner — no halving, grouping, or per-interaction math needed here.
+// The sheet's trailing "Grand Total" row is dropped by the numeric-ID check.
+function qtdAssistsRowToEntry(r) {
+  var id = String(r['employee id'] || '').trim();
+  if (!id || !/^\d+$/.test(id)) return null;
+  var name = String(r['rep name'] || r['name'] || '').trim();
+  if (!name) return null;
+  var metrics = {
+    ac:  parseInt(r['ac']  || 0) || 0,
+    cs:  parseInt(r['cs']  || 0) || 0,
+    wc:  parseInt(r['wc']  || 0) || 0,
+    sra: parseInt(r['sra'] || 0) || 0,
+    cap: parseInt(r['cap'] || 0) || 0,
+    ic:  parseInt(r['ic']  || 0) || 0,
+    pto: parseInt(r['pto'] || 0) || 0
+  };
+  var total = metrics.ac + metrics.cs + metrics.wc + metrics.sra + metrics.cap + metrics.ic + metrics.pto;
+  return {
+    id:     id,
+    name:   name,
+    office: shortOffice(String(r['office'] || '')),
+    region: String(r['region'] || ''),
+    ac:     metrics.ac, cs: metrics.cs, wc: metrics.wc, sra: metrics.sra,
+    cap:    metrics.cap, ic: metrics.ic, pto: metrics.pto,
+    total:  total
+  };
+}
+
 function onboardRowToEmployee(r, idx) {
   // Field names match ob_rowToEmployee exactly so rendering works unchanged
   // Sheet columns: status,name,mobile,referral,leader,squad,office,
@@ -7801,6 +7832,17 @@ async function fetchSheetsData(opts) {
     if (ilRows.length) { INSTALL_LIST.length = 0; ilRows.forEach(function(r){ r['office'] = shortOffice(r['office'] || ''); INSTALL_LIST.push(r); }); }
     if (typeof renderLeadershipPulse === 'function') renderLeadershipPulse(null);
   } catch(e) { errors.push('Install List: ' + e.message); }
+
+  // ── QTD_Assists (pre-totaled per rep — replaces old Install List assist calc) ─
+  try {
+    var qaRes  = await fetchWithTimeout(sheetsUrl('QTD_Assists'));
+    if (!qaRes.ok) throw new Error('HTTP ' + qaRes.status);
+    var qaRows = sheetsRowsToObjects((await qaRes.json()).values || [])
+                   .map(qtdAssistsRowToEntry)
+                   .filter(Boolean);
+    if (qaRows.length) { QTD_ASSISTS_LIST.length = 0; qaRows.forEach(function(e){ QTD_ASSISTS_LIST.push(e); }); }
+    if (typeof renderAssistsTab === 'function') renderAssistsTab();
+  } catch(e) { errors.push('QTD_Assists: ' + e.message); }
 
   // ── Closed Deals (New Hire tally counter) ────────────────────────────────────
   try {
@@ -9148,7 +9190,6 @@ function renderProductivity() {
   body.light-mode #assists-table thead th { background: var(--near-black); color: #1C1C1E; }
 
 /* ── Light mode: all modals keep dark bg — force light text inside ── */
-body.light-mode #assists-modal,
 body.light-mode #rep-modal,
 body.light-mode #squad-snapshot-inner,
 body.light-mode #pod-snapshot-inner,
@@ -9157,22 +9198,9 @@ body.light-mode #pod-snapshot-inner,
 body.light-mode #pod-snapshot-inner * { color: #F5F5F7; }
 body.light-mode #pod-snapshot-inner #pod-snapshot-title { color: var(--r-franchise); }
 
-body.light-mode #assists-modal *,
 body.light-mode #rep-modal *,
 body.light-mode #squad-snapshot-inner *,
 body.light-mode #wtd-goals-panel * { color: inherit; }
-
-/* Specific text elements inside dark modals */
-body.light-mode .am-header,
-body.light-mode .am-sup,
-body.light-mode .am-name,
-body.light-mode .am-count-line,
-body.light-mode .am-row-num,
-body.light-mode .am-row-name { color: #F5F5F7; }
-body.light-mode .am-count-line span { color: #27d9d9; }
-body.light-mode .am-close-btn { color: rgba(248,249,249,0.5); border-color: rgba(170,221,221,0.12); }
-body.light-mode .am-close-btn:hover { color: #F5F5F7; }
-body.light-mode .am-row { border-bottom-color: rgba(170,221,221,0.07); }
 
 body.light-mode #rep-modal .rm-name,
 body.light-mode #rep-modal .rm-stat-label,
@@ -9261,53 +9289,6 @@ body.light-mode #wtd-goals-panel .goals-field-input { color: #F5F5F7; }
     font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
     font-size: 15px; font-weight: 700; color: var(--cyan-light); min-width: 28px; text-align: right;
   }
-  #assists-modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.65); z-index: 500;
-    align-items: center; justify-content: center; padding: 20px;
-  }
-  #assists-modal-overlay.open { display: flex; }
-  #assists-modal {
-    background: #1a1718; border: 1px solid rgba(170,221,221,0.2);
-    width: 420px; max-width: 100%; max-height: 80vh;
-    display: flex; flex-direction: column; overflow: hidden;
-  }
-  .am-header {
-    padding: 24px 28px 18px; border-bottom: 1px solid rgba(170,221,221,0.12); flex-shrink: 0;
-  }
-  .am-sup {
-    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
-    color: var(--cyan-dark); margin-bottom: 8px;
-  }
-  .am-name { font-size: 22px; font-weight: 700; color: var(--off-white); letter-spacing: -0.3px; }
-  .am-count-line {
-    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
-    color: var(--text-muted); margin-top: 6px;
-  }
-  .am-count-line span { color: var(--cyan-light); font-weight: 700; }
-  .am-list { overflow-y: auto; padding: 16px 28px 20px; flex: 1; }
-  .am-row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 10px 0; border-bottom: 1px solid rgba(170,221,221,0.07);
-    animation: rowIn .18s ease both;
-  }
-  .am-row:last-child { border-bottom: none; }
-  .am-row-num {
-    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-size: 10px; letter-spacing: 1px; color: var(--text-muted); min-width: 26px;
-  }
-  .am-row-name { flex: 1; font-size: 14px; font-weight: 600; color: var(--off-white); }
-  .am-close-btn {
-    display: block; width: 100%; padding: 13px 28px;
-    background: transparent; border: none; border-top: 1px solid rgba(170,221,221,0.12);
-    color: var(--text-muted);
-    font-family: Helvetica Neue,Helvetica,Arial,sans-serif;
-    font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
-    cursor: pointer; text-align: center; transition: color .15s, background .15s; flex-shrink: 0;
-  }
-  .am-close-btn:hover { color: var(--off-white); background: rgba(170,221,221,0.05); }
 </style>
 
 <!-- Stats bar -->
@@ -9315,7 +9296,7 @@ body.light-mode #wtd-goals-panel .goals-field-input { color: #F5F5F7; }
   <div class="stat-card">
     <div class="stat-label">Total Assists</div>
     <div class="stat-value" id="assists-stat-total">—</div>
-    <div class="stat-sub">from install list</div>
+    <div class="stat-sub">from QTD_Assists</div>
   </div>
   <div class="stat-card">
     <div class="stat-label">Assisters</div>
@@ -9350,9 +9331,15 @@ body.light-mode #wtd-goals-panel .goals-field-input { color: #F5F5F7; }
       <tr>
         <th style="width:48px" onclick="assistsSort('rank')"># <span class="sa">&#8597;</span></th>
         <th onclick="assistsSort('name')">Rep Name <span class="sa">&#8597;</span></th>
-        <th onclick="assistsSort('metric')" style="width:70px">Type <span class="sa">&#8597;</span></th>
-        <th onclick="assistsSort('count')">Assists <span class="sa">&#8597;</span></th>
-        <th onclick="assistsSort('unique')">Unique CS Reps <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('office')">Office <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('ac')" style="text-align:right">AC <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('cs')" style="text-align:right">CS <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('wc')" style="text-align:right">WC <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('sra')" style="text-align:right">SRA <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('cap')" style="text-align:right">CAP <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('ic')" style="text-align:right">IC <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('pto')" style="text-align:right">PTO <span class="sa">&#8597;</span></th>
+        <th onclick="assistsSort('total')" style="text-align:right">Total <span class="sa">&#8597;</span></th>
       </tr>
     </thead>
     <tbody id="assists-tbody"></tbody>
@@ -9367,71 +9354,19 @@ body.light-mode #wtd-goals-panel .goals-field-input { color: #F5F5F7; }
 
 </div><!-- end panel-assists -->
 
-<!-- ── ASSISTS MODAL ──────────────────────────────────────────────────────── -->
-<div id="assists-modal-overlay" onclick="if(event.target===this)closeAssistsModal()">
-  <div id="assists-modal">
-    <div class="am-header">
-      <div class="am-sup">Assist Detail</div>
-      <div class="am-name" id="am-name">—</div>
-      <div class="am-count-line">Total assists: <span id="am-count">—</span></div>
-    </div>
-    <div class="am-list" id="am-list"></div>
-    <button class="am-close-btn" onclick="closeAssistsModal()">Close</button>
-  </div>
-</div>
-
-
 <script>
 
-
 // ── ASSISTS TAB LOGIC ─────────────────────────────────────────────────────────
-// buildAssistData() computes ASSIST_DATA live from INSTALL_LIST (Google Sheets).
-// Called at the top of renderAssistsTab() so data is always current.
+// Reads straight from QTD_ASSISTS_LIST (QTD_Assists tab) — one row per rep,
+// every metric column already finalized by the sheet owner. No math, no
+// grouping, no per-interaction detail — just sort and display.
+
+const ASSISTS_METRIC_COLS = ['ac', 'cs', 'wc', 'sra', 'cap', 'ic', 'pto'];
 
 function buildAssistData() {
-  var byMetric = {};
-  INSTALL_LIST.forEach(function(r) {
-    var name   = (r['assist name']   || '').trim();
-    var metric = (r['metric']        || '').trim().toUpperCase();
-    var csRep  = (r['cs rep name']   || '').trim();
-    if (!name || !metric || (metric !== 'SRA' && metric !== 'IC')) return;
-    if (!byMetric[name]) byMetric[name] = {};
-    if (!byMetric[name][metric]) byMetric[name][metric] = [];
-    if (csRep) byMetric[name][metric].push(csRep);
-  });
-
-  // Compute halved counts and combined totals per rep
-  var repTotals = {};
-  Object.keys(byMetric).forEach(function(name) {
-    var total = 0;
-    Object.keys(byMetric[name]).forEach(function(metric) {
-      total += Math.ceil(byMetric[name][metric].length / 2);
-    });
-    repTotals[name] = total;
-  });
-
-  // Sort reps by combined total desc
-  var sortedNames = Object.keys(repTotals).sort(function(a, b) {
-    return repTotals[b] - repTotals[a];
-  });
-
-  // Build flat rows: SRA then IC per rep
-  var rows = [];
-  var rank = 1;
-  sortedNames.forEach(function(name) {
-    ['SRA', 'IC'].forEach(function(metric) {
-      var csReps = byMetric[name][metric];
-      if (!csReps || !csReps.length) return;
-      var count  = Math.ceil(csReps.length / 2);
-      var unique = (new Set(csReps)).size;
-      rows.push({
-        name: name, metric: metric, count: count,
-        unique: unique, cs_reps: csReps,
-        rep_total: repTotals[name], rank: rank
-      });
-    });
-    rank++;
-  });
+  var rows = QTD_ASSISTS_LIST.filter(function(e) { return e.total > 0; });
+  rows.sort(function(a, b) { return b.total - a.total; });
+  rows.forEach(function(e, i) { e.rank = i + 1; });
   return rows;
 }
 
@@ -9440,7 +9375,7 @@ let _assistsSortDir = 1;
 
 function assistsSort(key) {
   if (_assistsSortKey === key) { _assistsSortDir *= -1; }
-  else { _assistsSortKey = key; _assistsSortDir = (key === 'name' || key === 'metric') ? 1 : -1; }
+  else { _assistsSortKey = key; _assistsSortDir = (key === 'name' || key === 'office') ? 1 : -1; }
   renderAssistsTab();
 }
 
@@ -9449,17 +9384,13 @@ function renderAssistsTab() {
   const searchEl = document.getElementById('assists-search');
   const search = searchEl ? searchEl.value.trim().toLowerCase() : '';
 
-  // Stats — unique reps only
-  const seen = new Set();
-  let totalAssists = 0, totalReps = 0, topName = '', topTotal = 0;
+  // Stats
+  let totalAssists = 0, topName = '', topTotal = 0;
   ASSIST_DATA.forEach(d => {
-    totalAssists += d.count;
-    if (!seen.has(d.name)) {
-      seen.add(d.name);
-      totalReps++;
-      if (d.rep_total > topTotal) { topTotal = d.rep_total; topName = d.name; }
-    }
+    totalAssists += d.total;
+    if (d.total > topTotal) { topTotal = d.total; topName = d.name; }
   });
+  const totalReps = ASSIST_DATA.length;
   const avg = totalReps ? Math.round(totalAssists / totalReps) : 0;
 
   const el = id => document.getElementById(id);
@@ -9474,79 +9405,39 @@ function renderAssistsTab() {
 
   data.sort((a, b) => {
     const key = _assistsSortKey;
-    if (key === 'rank') {
-      // Primary: rank asc (already encodes combined total), secondary: SRA before IC
-      if (a.rank !== b.rank) return (a.rank - b.rank) * _assistsSortDir;
-      if (a.name !== b.name) return a.name < b.name ? -_assistsSortDir : _assistsSortDir;
-      return a.metric === 'SRA' ? -1 : 1;
-    }
     let va = a[key], vb = b[key];
     if (typeof va === 'string') va = va.toLowerCase();
     if (typeof vb === 'string') vb = vb.toLowerCase();
     if (va < vb) return -1 * _assistsSortDir;
     if (va > vb) return  1 * _assistsSortDir;
-    // Tiebreak: preserve original grouped order
-    if (a.rank !== b.rank) return a.rank - b.rank;
-    return a.metric === 'SRA' ? -1 : 1;
+    return a.rank - b.rank;
   });
 
   document.querySelectorAll('#assists-table th').forEach(th => th.classList.remove('sorted'));
-  const keyIdx = {rank: 0, name: 1, metric: 2, count: 3, unique: 4};
+  const keyIdx = {rank: 0, name: 1, office: 2, ac: 3, cs: 4, wc: 5, sra: 6, cap: 7, ic: 8, pto: 9, total: 10};
   const ths = document.querySelectorAll('#assists-table th');
   if (ths[keyIdx[_assistsSortKey]]) ths[keyIdx[_assistsSortKey]].classList.add('sorted');
 
-  const maxCount = ASSIST_DATA.length ? Math.max(...ASSIST_DATA.map(d => d.count)) : 1;
   const tbody = document.getElementById('assists-tbody');
   if (!tbody) return;
 
   tbody.innerHTML = '';
   data.forEach((d, i) => {
-    const pct = Math.round((d.count / maxCount) * 100);
-    const isSRA = d.metric === 'SRA';
-    const badgeColor = isSRA ? 'var(--r-l3)'              : 'var(--r-l1)';
-    const badgeBg    = isSRA ? 'rgba(90,158,160,0.10)'    : 'rgba(45,196,142,0.10)';
-    const badgeBdr   = isSRA ? 'rgba(90,158,160,0.35)'    : 'rgba(45,196,142,0.35)';
     const tr = document.createElement('tr');
     tr.style.animationDelay = Math.min(i * 0.008, 0.3) + 's';
-    tr.onclick = () => openAssistsModal(d);
     tr.innerHTML =
       '<td style="color:var(--text-muted);font-size:12px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif">' + d.rank + '</td>' +
       '<td style="font-weight:600;font-size:15px">' + d.name + '</td>' +
-      '<td><span style="display:inline-block;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border:1px solid ' + badgeBdr + ';color:' + badgeColor + ';background:' + badgeBg + '">' + d.metric + '</span></td>' +
-      '<td><div class="assists-bar-wrap">' +
-        '<div class="assists-bar-track"><div class="assists-bar-fill" style="width:' + pct + '%"></div></div>' +
-        '<span class="assists-count-val">' + d.count + '</span>' +
-      '</div></td>' +
-      '<td style="color:var(--text-muted);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:13px">' + d.unique + '</td>';
+      '<td style="color:var(--text-muted);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:12px">' + (d.office || '—') + '</td>' +
+      ASSISTS_METRIC_COLS.map(function(k) {
+        return '<td style="color:var(--text-muted);text-align:right">' + (d[k] || 0) + '</td>';
+      }).join('') +
+      '<td style="text-align:right"><span class="assists-count-val">' + d.total + '</span></td>';
     tbody.appendChild(tr);
   });
 
-  const uniqueReps = new Set(data.map(d => d.name)).size;
   const fc = document.getElementById('assists-footer-count');
-  if (fc) fc.textContent = uniqueReps + ' rep' + (uniqueReps !== 1 ? 's' : '') + ' · ' + data.length + ' rows';
-}
-
-function openAssistsModal(d) {
-  const overlay = document.getElementById('assists-modal-overlay');
-  if (!overlay) return;
-  document.getElementById('am-name').textContent  = d.name;
-  document.getElementById('am-count').textContent = d.count + ' ' + d.metric + ' assists';
-
-  const listEl = document.getElementById('am-list');
-  listEl.innerHTML = '';
-  d.cs_reps.forEach(function(rep, i) {
-    const row = document.createElement('div');
-    row.className = 'am-row';
-    row.style.animationDelay = Math.min(i * 0.015, 0.4) + 's';
-    row.innerHTML = '<span class="am-row-num">' + (i + 1) + '</span><span class="am-row-name">' + rep + '</span>';
-    listEl.appendChild(row);
-  });
-  overlay.classList.add('open');
-}
-
-function closeAssistsModal() {
-  const overlay = document.getElementById('assists-modal-overlay');
-  if (overlay) overlay.classList.remove('open');
+  if (fc) fc.textContent = data.length + ' rep' + (data.length !== 1 ? 's' : '');
 }
 </script>
 
@@ -9887,19 +9778,43 @@ function initGIS() {
     callback:  async function(resp) {
       if (resp.error) {
         showSyncBanner('Sign-in failed: ' + resp.error, true);
+        updateAuthUI(false);
         return;
       }
-      sheetsAuthToken = resp.access_token;
-      // Fetch signed-in user's email BEFORE enabling UI or flushing writes
+      // Fetch signed-in user's email BEFORE granting any write access
+      var email = '';
       try {
         var tRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { 'Authorization': 'Bearer ' + resp.access_token }
         });
         var tInfo = await tRes.json();
-        if (tInfo.email) currentUserEmail = tInfo.email;
+        email = (tInfo.email || '').toLowerCase().trim();
       } catch(e) { console.warn('userinfo failed', e); }
+
+      // Gate write access behind the existing editor allowlist. The dashboard
+      // itself is already public/read-only without signing in at all — this
+      // check only decides whether this Google account gets Sheets write
+      // access via the "Enable Edits" button. Anyone who signs in but isn't
+      // an approved editor is left exactly as before: read-only, no error.
+      var level = await xiiCheckAccess(email, resp.access_token);
+      if (level !== 'edit') {
+        updateAuthUI(false);
+        return;
+      }
+
+      sheetsAuthToken  = resp.access_token;
+      currentUserEmail = email;
+      try {
+        localStorage.setItem('xii_auth', JSON.stringify({
+          email:   email,
+          token:   resp.access_token,
+          level:   'edit',
+          expires: Date.now() + 55 * 60 * 1000 // 55 min
+        }));
+      } catch(e) {}
+
       updateAuthUI(true);
-      showSyncBanner('Signed in as ' + (currentUserEmail || 'unknown') + ' — syncing live data...');
+      showSyncBanner('Signed in as ' + email + ' — syncing live data...');
       flushWriteQueue();
       // Re-fetch all live Sheets tabs now that we have an auth token.
       // skipOnboarding:true preserves ob_employees._sheetRow values so
@@ -9915,7 +9830,7 @@ function initGIS() {
       });
     }
   });
-  // Only reset to signed-out if gate hasn't already authenticated the user
+  // Only reset to signed-out if a restored session hasn't already authenticated the user
   if (!sheetsAuthToken) updateAuthUI(false);
 }
 window.addEventListener('load', function() { setTimeout(initGIS, 500); });
@@ -10092,20 +10007,17 @@ var xiiAccessLevel  = null; // null | 'view' | 'edit'
 // On page load — check localStorage for a saved session
 window.addEventListener('DOMContentLoaded', function() {
   applyBranding(); // Stamp brand text and build all office UI from CONSUL_CONFIG
+  // The dashboard is public and read-only by default — no sign-in required
+  // just to view it. Data is already loaded independently by initDashboard().
+  // The only thing a Google session restores here is previously-approved
+  // *write* access (clicking "Enable Edits" / "Sheets Live"), for an editor
+  // who signed in within the last 55 minutes.
   var saved = null;
   try { saved = JSON.parse(localStorage.getItem('xii_auth') || 'null'); } catch(e) {}
-  if (saved && saved.email && saved.token && saved.expires > Date.now()) {
-    // Restore session
+  if (saved && saved.email && saved.token && saved.level === 'edit' && saved.expires > Date.now()) {
     currentUserEmail = saved.email;
     sheetsAuthToken  = saved.token;
-    xiiAccessLevel   = saved.level;
-    xiiUnlockPage(saved.level);
-    // Re-init GIS silently in background so writes still work
-    updateAuthUI(saved.level === 'edit');
-  } else {
-    // No valid session — show gate
-    document.body.classList.add('xii-locked');
-    document.getElementById('xii-auth-gate').classList.add('open');
+    updateAuthUI(true);
   }
 });
 
