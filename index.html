@@ -4996,8 +4996,8 @@ function _scDate(mode) {
 }
 function _scSubtitle(mode) {
   const d = _scDate(mode), f = x => (x.getMonth() + 1) + '/' + x.getDate();
-  return mode === 'qtd' ? 'Quarter to Date  ·  as of ' + f(d)
-                        : 'Week of ' + f(weekMonday(d)) + ' – ' + f(d);
+  return mode === 'qtd' ? 'Quarter to Date  ·  As of ' + f(d)
+                        : 'As of ' + f(d);
 }
 function _scFileDate(mode) {
   const d = _scDate(mode), p = n => String(n).padStart(2, '0');
@@ -5245,7 +5245,7 @@ function weeklyHighlightsData() {
   const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   const el = document.getElementById('wtd-date-input');
   const d = (el && el.value) ? new Date(el.value + 'T12:00:00') : new Date();
-  const weekLabel = 'WEEK ENDING ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+  const weekLabel = 'AS OF ' + MONTHS[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
 
   const reps = WTD_EMPLOYEES.map(e => {
     const w = WTD_MAP[e.id] || e;
@@ -5401,7 +5401,7 @@ async function downloadWeeklyHighlights() {
       ctx.fillText(t, r.x, r.y + r.h / 2 + 1);
     }
     const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
-    const d = weeklyHighlightsData().weekLabel.replace('WEEK ENDING ', '').replace(/[^A-Za-z0-9]+/g, '_');
+    const d = weeklyHighlightsData().weekLabel.replace('AS OF ', '').replace(/[^A-Za-z0-9]+/g, '_');
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Weekly_Highlights_' + d + '.png';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   } catch (e) { console.error(e); alert('Could not create the PNG: ' + e.message); }
@@ -8108,10 +8108,37 @@ async function fetchSheetsData(opts) {
     if (exRows.length) { rankingsData = exRows; RANKINGS_MAP = Object.fromEntries(exRows.map(function(r){ return [r.id, {title:r.title, currentRank:r.currentRank, highestRank:r.highestRank}]; })); }
   } catch(e) { errors.push('Export: ' + e.message); }
 
-  // ── Report (WTD AC/SRA/CAP/IC/Knocks/Pitches) ────────────────────────────────
-  // SRA/CAP/IC week values now come from this tab (sras/caps/installs columns)
-  // instead of QTD Points, per QTD Points reliability issues. If this fetch
-  // fails, wtd_sra/wtd_cap/wtd_ic simply retain whatever QTD Points set above.
+  // ── WTD tab (weekly AC/CS/SRA/CAP/IC — the source of truth for weekly performance) ──
+  // Columns: Employee ID, Rep Name, Office, Region, AC, CS, WC, SRA, CAP, IC, PTO
+  // If this fetch fails, wtd_* simply retain whatever QTD Points set above.
+  try {
+    var wkRes = await fetchWithTimeout(sheetsUrl('WTD'));
+    if (!wkRes.ok) throw new Error('HTTP ' + wkRes.status);
+    var wkRows = sheetsRowsToObjects((await wkRes.json()).values || []);
+    // Authoritative: anyone not on the WTD tab has no weekly activity
+    WTD_EMPLOYEES.forEach(function(e) { e.wtd_ac = 0; e.wtd_cs = 0; e.wtd_sra = 0; e.wtd_cap = 0; e.wtd_ic = 0; });
+    wkRows.forEach(function(r) {
+      var id = String(r['employee id'] || '').trim();
+      if (!id || !/^\d+$/.test(id)) return;   // skips the Grand Total row
+      var vals = { wtd_ac: csvNum(r['ac']), wtd_cs: csvNum(r['cs']), wtd_sra: csvNum(r['sra']), wtd_cap: csvNum(r['cap']), wtd_ic: csvNum(r['ic']) };
+      var w = WTD_MAP[id];
+      if (w) {
+        Object.assign(w, vals);
+      } else {
+        var ro = (rosterById && rosterById[id]) || {};
+        var ne = Object.assign({ id: id, name: ro.name || String(r['rep name'] || id), squad: ro.squad || '',
+          office: ro.office || shortOffice(String(r['office'] || '')), status: ro.status || '',
+          knocks: 0, pitches: 0, hours_knocked: 0, wtd_wc: 0, qtr_status: '' }, vals);
+        WTD_EMPLOYEES.push(ne);
+        WTD_MAP[id] = ne;
+      }
+    });
+  } catch(e) { errors.push('WTD: ' + e.message); }
+
+  await sleep(350);
+
+  // ── Report (Pitches / Knocks / Hours knocked only) ───────────────────────────
+  // Weekly AC/CS/SRA/CAP/IC come from the WTD tab above, not from here.
   try {
     var rpRes = await fetchWithTimeout(sheetsUrl('Report'));
     if (!rpRes.ok) throw new Error('HTTP ' + rpRes.status);
@@ -8120,19 +8147,15 @@ async function fetchSheetsData(opts) {
       if (!id || !/^\d+$/.test(id)) return;
       var wtd = WTD_MAP[id];
       if (wtd) {
-        wtd.wtd_ac        = csvNum(r['acs']);
-        wtd.wtd_sra       = csvNum(r['sras']);
-        wtd.wtd_cap       = csvNum(r['caps']);
-        wtd.wtd_ic        = csvNum(r['installs']);
         wtd.pitches       = csvNum(r['pitches']);
         wtd.knocks        = csvNum(r['knocks']);
         wtd.hours_knocked = csvNum(r['hours knocked']);
       } else {
         var ro = (rosterById && rosterById[id]) || {};
         var newEntry = { id, name: ro.name||id, squad: ro.squad||'', office: ro.office||'', status: ro.status||'',
-          wtd_ac: csvNum(r['acs']), pitches: csvNum(r['pitches']), knocks: csvNum(r['knocks']),
+          wtd_ac: 0, pitches: csvNum(r['pitches']), knocks: csvNum(r['knocks']),
           hours_knocked: csvNum(r['hours knocked']), wtd_cs:0, wtd_wc:0,
-          wtd_sra: csvNum(r['sras']), wtd_cap: csvNum(r['caps']), wtd_ic: csvNum(r['installs']),
+          wtd_sra: 0, wtd_cap: 0, wtd_ic: 0,
           qtr_status:'' };
         WTD_EMPLOYEES.push(newEntry);
         WTD_MAP[id] = newEntry;
