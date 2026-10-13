@@ -393,7 +393,8 @@ body.light-mode .s-premier{border-color:rgba(122,88,0,.3);background:rgba(122,88
 
 /* ── GROUP HEADER ROWS ── */
 tr.group-header td{background:rgba(255,255,255,0.04);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan-light);padding:14px 18px;border-bottom:none;border-top:1px solid var(--border)}
-body.light-mode tr.group-header td{background:rgba(0,0,0,0.06);color:#1C1C1E;border-top-color:var(--border)}
+body.light-mode tr.group-header td{background:#3A3D42;color:#FFFFFF;border-top-color:#2A2C30}
+body.light-mode tr.group-header td button{color:#AADDDD !important;border-color:rgba(170,221,221,0.45) !important}
 .col-header td{background:var(--near-black);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:clamp(9px,.85vw,11px);font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cyan-dark);padding:clamp(10px,1vw,16px) clamp(12px,1.1vw,18px);border-bottom:1px solid rgba(170,221,221,0.18);border-top:none;white-space:nowrap;cursor:pointer;user-select:none;transition:background .2s}
 .col-header td:hover{color:var(--cyan-light)}
 .col-header td span.sa{opacity:.4;margin-left:4px}
@@ -2911,7 +2912,7 @@ function sqGoalWTD(k, members) {
   const ic  = members.reduce((s,e)=>s+(e.wtd_ic||0),0);
   const sraGoal = g.weekly_sra;
   const icGoal  = g.weekly_ic ?? Math.round(g.qtr_ic/13*10)/10;
-  const isLight = document.body.classList.contains('light-mode');
+  const isLight = false; // squad header bar is dark in both themes, so always use the light-on-dark palette
   const cLbl  = isLight ? '#6E6E73'              : '#AADDDD';
   const cVal  = isLight ? '#1C1C1E'              : '#F8F9F9';
   const cSep  = isLight ? 'rgba(28,28,30,0.25)'  : 'rgba(248,249,249,.3)';
@@ -2935,7 +2936,7 @@ function sqGoalQTD(k, members) {
   const ic  = Math.round(members.reduce((s,e)=>s+(e.qtr_ic||0),0));
   const sraGoal = g.weekly_sra * 13;
   const icGoal  = g.qtr_ic;
-  const isLight = document.body.classList.contains('light-mode');
+  const isLight = false; // squad header bar is dark in both themes, so always use the light-on-dark palette
   const cLbl  = isLight ? '#6E6E73'              : '#AADDDD';
   const cVal  = isLight ? '#1C1C1E'              : '#F8F9F9';
   const cSep  = isLight ? 'rgba(28,28,30,0.25)'  : 'rgba(248,249,249,.3)';
