@@ -4989,7 +4989,7 @@ function squadSnapSetMode(mode) {
 const SC_FONT = "'Helvetica Neue',Helvetica,Arial,sans-serif"; // single quotes: also embedded in inline style="" attributes
 const SC_COLOR = {
   band:'#1f4e79', bandSub:'#d6e4f0', head:'#163450', group:'#dae0f2',
-  stripe:'#f5f6fa', row:'#ffffff', text:'#2b2b2b', totalBg:'#fff0cc', border:'#d0d4dc'
+  stripe:'#f5f6fa', row:'#ffffff', text:'#2b2b2b', totalBg:'#fff0cc', idle:'#d64545', border:'#d0d4dc'
 };
 
 function _scDate(mode) {
@@ -5019,11 +5019,12 @@ function squadScorecardData(squadKey, mode) {
     return isW ? [w.pitches || 0, w.wtd_ac || 0, w.wtd_cs || 0, w.wtd_sra || 0, w.wtd_cap || 0, w.wtd_ic || 0]
                : [q.qtr_sra || 0, q.qtr_cap || 0, q.qtr_ic || 0, q.days_since_sra || 0];
   };
-  const active = members.map(e => ({ e: e, v: vals(e) }))
-    .filter(r => r.v.slice(0, counted).some(n => n > 0))
+  // Everyone in the squad is listed; reps with no activity are flagged (idle) and sorted to the bottom
+  const active = members.map(e => { const v = vals(e); return { e: e, v: v, idle: !v.slice(0, counted).some(n => n > 0) }; })
     .sort((a, b) => {
       if (a.e.name === leader) return -1;
       if (b.e.name === leader) return 1;
+      if (a.idle !== b.idle) return a.idle ? 1 : -1;
       return (b.v[sraIdx] - a.v[sraIdx]) || (b.v[1 % counted] - a.v[1 % counted]) || a.e.name.localeCompare(b.e.name);
     });
 
@@ -5039,7 +5040,7 @@ function squadScorecardData(squadKey, mode) {
     groups = names.map(n => ({ label: n, rows: byPod[n] }));
     if (byPod['']) groups.push({ label: 'Not Assigned', rows: byPod[''] });
   }
-  groups.forEach(g => { g.rows = g.rows.map(r => ({ name: r.e.name, vals: r.v })); });
+  groups.forEach(g => { g.rows = g.rows.map(r => ({ name: r.e.name, vals: r.v, idle: r.idle })); });
 
   const totals = cols.map((c, i) => {
     if (!isW && i === 3) return '';                        // Days/SRA doesn't sum
@@ -5078,7 +5079,7 @@ function renderSquadSnapshot(squadKey) {
     if (g.label) html += '<tr><td colspan="' + (d.cols.length + 1) + '" style="' + F + 'background:' + SC_COLOR.group + ';color:' + SC_COLOR.head + ';font-weight:700;font-size:15px;padding:9px 20px;">' + g.label + '</td></tr>';
     g.rows.forEach((r, i) => {
       const bg = i % 2 === 0 ? SC_COLOR.stripe : SC_COLOR.row;
-      html += '<tr style="background:' + bg + '"><td style="' + F + 'color:' + SC_COLOR.text + ';font-size:14px;padding:12px 20px;white-space:nowrap;">' + r.name + '</td>'
+      html += '<tr style="background:' + bg + '"><td style="' + F + 'color:' + SC_COLOR.text + ';font-size:14px;padding:12px 20px;white-space:nowrap;">' + r.name + (r.idle ? ' <span title="No activity" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + SC_COLOR.idle + ';margin-left:7px;vertical-align:middle;"></span>' : '') + '</td>'
         + r.vals.map((v, ci) => '<td style="' + F + 'color:' + SC_COLOR.text + ';font-size:14px;padding:12px 10px;text-align:center;">' + ((d.mode === 'qtd' && ci === 3 && !v) ? '—' : v) + '</td>').join('') + '</tr>';
     });
   });
@@ -5135,7 +5136,9 @@ function drawSquadScorecard(d, scale) {
     g.rows.forEach((r, i) => {
       c.fillStyle = i % 2 === 0 ? SC_COLOR.stripe : SC_COLOR.row; c.fillRect(tx, y, tw, rowH);
       c.fillStyle = SC_COLOR.text; c.font = '400 15px ' + SC_FONT; c.textAlign = 'left';
-      c.fillText(fit(r.name, nameW - 30), tx + 20, y + rowH / 2 + 1);
+      const nm = fit(r.name, nameW - 30);
+      c.fillText(nm, tx + 20, y + rowH / 2 + 1);
+      if (r.idle) { c.fillStyle = SC_COLOR.idle; c.beginPath(); c.arc(tx + 20 + c.measureText(nm).width + 13, y + rowH / 2 + 1, 5, 0, Math.PI * 2); c.fill(); c.fillStyle = SC_COLOR.text; }
       c.textAlign = 'center';
       r.vals.forEach((v, ci) => c.fillText((d.mode === 'qtd' && ci === 3 && !v) ? '—' : String(v), colX(ci), y + rowH / 2 + 1));
       y += rowH;
@@ -5166,7 +5169,7 @@ function _scSave(blob, name) {
 
 async function downloadSquadScorecard() {
   const d = squadScorecardData(_squadSnapCurrent, _squadSnapMode);
-  if (!d.count) { showSyncBanner('No activity to export for this squad', true); return; }
+  if (!d.count) { showSyncBanner('No reps to export for this squad', true); return; }
   const blob = await _scBlob(drawSquadScorecard(d, 2));
   _scSave(blob, _scSlug(d.squadKey) + '_Scorecard_' + d.mode.toUpperCase() + '_' + _scFileDate(d.mode) + '.png');
 }
