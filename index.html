@@ -696,6 +696,23 @@ body.light-mode .rk-chk-item.checked { color: #1C1C1E; }
 #panel-calendar.active{display:flex;flex-direction:column;height:calc(100vh - 111px);overflow:hidden;}
 #panel-calendar .stats-bar{flex-shrink:0;}
 #panel-calendar .footer-bar{flex-shrink:0;}
+#training-calendar{--tc-accent:#35C4AE;flex:1;min-height:0;overflow:auto;padding:22px 36px 28px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:34px;align-items:start;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;}
+body.light-mode #training-calendar{--tc-accent:#0F7A6B;}
+#training-calendar h3{font-size:20px;font-weight:700;color:var(--tc-accent);margin:0 0 10px;letter-spacing:.5px;}
+#training-calendar h3 small{font-size:12px;font-weight:500;color:var(--text-muted);margin-left:10px;letter-spacing:1.5px;text-transform:uppercase;}
+#training-calendar table{width:100%;border-collapse:collapse;border:1px solid var(--border);}
+#training-calendar th{background:var(--tc-accent);color:#0b1f1c;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:9px 12px;text-align:left;}
+body.light-mode #training-calendar th{color:#fff;}
+#training-calendar td{padding:10px 12px;font-size:14px;color:var(--off-white);border-top:1px solid var(--border);vertical-align:middle;}
+#training-calendar td.tc-n{width:44px;color:var(--tc-accent);font-weight:700;text-align:center;}
+#training-calendar td.tc-d{width:118px;white-space:nowrap;color:var(--text-muted);}
+#training-calendar td.tc-w{width:96px;font-weight:700;}
+#training-calendar tr.tc-off td{font-style:italic;color:var(--text-muted);}
+#training-calendar tr.tc-past td{opacity:.45;}
+#training-calendar tr.tc-next td{background:rgba(53,196,174,0.13);}
+#training-calendar tr.tc-next td.tc-d{color:var(--off-white);font-weight:700;}
+#training-calendar .tc-tag{display:inline-block;margin-left:8px;padding:1px 7px;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border:1px solid var(--tc-accent);color:var(--tc-accent);vertical-align:middle;}
+@media (max-width:900px){#training-calendar{grid-template-columns:1fr;padding:16px 14px 24px;}}
 body.chrome-collapsed #panel-rankings.active{height:calc(100vh - 65px)}
 #panel-rankings .rankings-stats{flex-shrink:0}
 #panel-rankings .rankings-filter-bar{flex-shrink:0}
@@ -2153,21 +2170,13 @@ body.light-mode #panel-onboard-employee .dash-chip.active, body.light-mode /* Le
 <div class="tab-panel" id="panel-calendar">
   <div class="stats-bar" style="grid-template-columns:1fr;padding:0;">
     <div class="stat-card" style="display:flex;align-items:center;gap:14px;padding:14px 36px;">
-      <span class="stat-label" style="margin-bottom:0;">Team Calendar</span>
-      <span style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;">Synced via Google Calendar</span>
+      <span class="stat-label" style="margin-bottom:0;">Training Calendar</span>
+      <span id="tc-range" style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;"></span>
     </div>
   </div>
-  <div style="flex:1;overflow:hidden;padding:0 36px 0 36px;display:flex;flex-direction:column;box-sizing:border-box;">
-    <iframe
-      src=""
-      id="calendar-iframe"
-      style="border:1px solid var(--border);width:100%;flex:1;display:block;min-height:0;"
-      frameborder="0"
-      scrolling="no"
-    ></iframe>
-  </div>
+  <div id="training-calendar"></div>
   <div class="footer-bar">
-    <span class="footer-count">GOOGLE CALENDAR — SYNCED</span>
+    <span class="footer-count">TRAINING CALENDAR</span>
     <span class="footer-brand">■ XII — BUILDING CULTURE FORWARD ■</span>
   </div>
 </div>
@@ -2625,11 +2634,73 @@ function applyBranding() {
   // ── Page title ────────────────────────────────────────────────────────────
   document.title = 'Consul \u2014 ' + brand + ' Performance Dashboard';
 
-  // ── Calendar iframe — src injected from config ────────────────────────────
-  const calIframe = document.getElementById('calendar-iframe');
-  if (calIframe && CONSUL_CONFIG.calendar_src) {
-    calIframe.src = CONSUL_CONFIG.calendar_src;
-  }
+  renderTrainingCalendar();
+}
+
+// ── TRAINING CALENDAR ────────────────────────────────────────────────────────
+// Edit the lists below to update the calendar. Dates are YYYY-MM-DD.
+//   { d, t, who }            a training (numbered automatically)
+//   { d, off: 'reason' }     no meeting that day
+// Past dates dim automatically and the next upcoming training is highlighted.
+const TRAINING_CALENDAR = [
+  { title: 'Correlation', sub: 'Mondays', rows: [
+    { d: '2026-10-19', t: 'Panel discussion', done: true },
+    { d: '2026-10-26', t: 'The Power of Bandwagoning', who: 'Adam' },
+    { d: '2026-11-02', t: 'Handling Cancellations: The Toughest Objections', who: 'Tyler' },
+    { d: '2026-11-09', t: 'Clear Customer Communication That Builds Trust', who: 'Spencer' },
+    { d: '2026-11-16', t: 'Maintaining Leverage Without Losing the Customer', who: 'Jaxon' },
+    { d: '2026-11-23', t: 'Saving Cancellations: How to Structure the Right Deal', who: 'John' },
+    { d: '2026-11-30', t: 'Become a Referral Pro', who: 'Hector' },
+    { d: '2026-12-07', t: 'Mentality', who: 'Chase' },
+    { d: '2026-12-14', t: 'Using Incentives to Re-Engage Stuck Customers', who: 'Jaxon' },
+    { d: '2026-12-21', t: 'The Cancellation Conversation: How to Win It In Person or Over the Phone', who: 'Hector' },
+    { d: '2026-12-28', off: 'Holiday break' },
+    { d: '2027-01-04', t: 'Getting Shopped: How to Prevent Permit Poaching and Price Undercutting', who: 'Alec' },
+  ]},
+  { title: 'Combine', sub: 'Thursdays', rows: [
+    { d: '2026-10-22', t: 'Prospecting', who: 'Devin' },
+    { d: '2026-10-29', t: 'Fresh vs. Add On Systems', who: 'Preston' },
+    { d: '2026-11-05', t: 'Door Approach: Intro', who: 'Tucker' },
+    { d: '2026-11-12', t: 'Door Approach: Problem', who: 'Devin' },
+    { d: '2026-11-19', t: 'Door Approach: Solution', who: 'Kendl' },
+    { d: '2026-11-26', off: 'Thanksgiving' },
+    { d: '2026-12-03', t: 'Door Approach: Pull the Bill', who: 'Spencer' },
+    { d: '2026-12-10', t: 'Door Approach: Kill the Bill', who: 'Ralph' },
+    { d: '2026-12-17', t: 'Door Approach: Setting an Appt.', who: 'John' },
+    { d: '2026-12-24', off: 'Holiday break' },
+    { d: '2026-12-31', off: 'Holiday break' },
+    { d: '2027-01-07', t: 'Solar Products', who: 'Ralph' },
+    { d: '2027-01-14', t: 'Solar Education', who: 'Tyler' },
+    { d: '2027-01-21', t: 'Sunrun vs. Dealers or Installers', who: 'Tucker' },
+  ]},
+];
+
+function renderTrainingCalendar() {
+  const host = document.getElementById('training-calendar');
+  if (!host) return;
+  const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const now = new Date(), todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'], MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const fmt = ds => { const d = new Date(ds + 'T12:00:00'); return DOW[d.getDay()] + ', ' + MON[d.getMonth()] + ' ' + d.getDate(); };
+  let first = '', last = '';
+  host.innerHTML = TRAINING_CALENDAR.map(sec => {
+    let n = 0, nextMarked = false;
+    const body = sec.rows.map(r => {
+      if (!first || r.d < first) first = r.d;
+      if (!last || r.d > last) last = r.d;
+      const past = r.d < todayStr;
+      if (r.off) return '<tr class="tc-off' + (past ? ' tc-past' : '') + '"><td class="tc-n"></td><td class="tc-d">' + fmt(r.d) + '</td><td colspan="2" style="text-align:center">No meeting &middot; ' + esc(r.off) + '</td></tr>';
+      let num;
+      if (r.done) num = '&#10003;'; else { n++; num = String(n).padStart(2, '0'); }
+      const isNext = !past && !r.done && !nextMarked; if (isNext) nextMarked = true;
+      const cls = (past || r.done ? 'tc-past' : '') + (isNext ? ' tc-next' : '');
+      return '<tr class="' + cls + '"><td class="tc-n">' + (past && !r.done ? '&#10003;' : num) + '</td><td class="tc-d">' + fmt(r.d) + '</td><td>' + esc(r.t)
+        + (r.done ? '<span class="tc-tag">Completed</span>' : '') + (isNext ? '<span class="tc-tag">Next</span>' : '') + '</td><td class="tc-w">' + esc(r.who || '') + '</td></tr>';
+    }).join('');
+    return '<section><h3>' + esc(sec.title) + '<small>' + esc(sec.sub) + '</small></h3><table><thead><tr><th style="text-align:center">#</th><th>Date</th><th>Training</th><th>Trainer</th></tr></thead><tbody>' + body + '</tbody></table></section>';
+  }).join('');
+  const rg = document.getElementById('tc-range');
+  if (rg && first) rg.textContent = fmt(first).replace(/^\w+, /, '') + ', ' + first.slice(0, 4) + ' \u2013 ' + fmt(last).replace(/^\w+, /, '') + ', ' + last.slice(0, 4);
 }
 
 const WTD_EMPLOYEES = []; // Populated from Google Sheets
@@ -2992,7 +3063,7 @@ function switchTab(id, el){
 
   else if(id==='onboarding') { try { ob_renderTable(); } catch(e) {} }
   else if(id==='overview') renderOverview();
-  else if(id==='calendar') { /* iframe self-renders — no JS needed */ }
+  else if(id==='calendar') { renderTrainingCalendar(); }
   else if(id==='rankings') renderRankings();
   else if(id==='data') renderDataTab();
   else if(id==='combine') renderCombineTab();
