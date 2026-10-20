@@ -2706,6 +2706,16 @@ function renderTrainingCalendar() {
 const WTD_EMPLOYEES = []; // Populated from Google Sheets
 const QTD_EMPLOYEES = []; // Populated from Google Sheets
 let ROSTER_EMPLOYEES   = []; // Populated from Google Sheets on load
+let EXCLUDED_REP_IDS   = new Set(); // IDs of Termed / Transferred reps (Roster 'Employment Status') — hidden everywhere
+// Drops excluded reps from every performance list/map loaded from the other tabs
+function purgeExcludedReps() {
+  if (!EXCLUDED_REP_IDS.size) return;
+  const dropArr = a => { if (!Array.isArray(a)) return; for (let i = a.length - 1; i >= 0; i--) { const id = a[i] && (a[i].id != null ? a[i].id : a[i]['employee id']); if (id != null && EXCLUDED_REP_IDS.has(String(id))) a.splice(i, 1); } };
+  const dropMap = m => { if (m) EXCLUDED_REP_IDS.forEach(id => { delete m[id]; }); };
+  [WTD_EMPLOYEES, QTD_EMPLOYEES, COMBINE2_EMPLOYEES, NEW_HIRE_EMPLOYEES, INSTALL_LIST, QTD_ASSISTS_LIST, GC_EMPLOYEES, rankingsData].forEach(dropArr);
+  [LW_MAP, REP_DETAIL_MAP, CLOSED_DEALS_MAP, RANKINGS_MAP].forEach(dropMap);
+  buildPerfMaps();
+}
 let COMBINE2_EMPLOYEES = []; // Populated from Google Sheets
 let NEW_HIRE_EMPLOYEES = []; // Populated from Google Sheets
 let INSTALL_LIST       = []; // Populated from Google Sheets — Install List tab (self gen calc)
@@ -7949,6 +7959,7 @@ function rosterRowToEmployee(r) {
     email:     String(r['email'] || ''),
     pod:       String(r['pod'] || ''),
     recruiter: String(r['recruiter'] || ''),
+    employmentStatus: String(r['employment status'] || '').trim(),   // blank = current; 'Termed' / 'Transferred' = off the scorecards
   };
 }
 
@@ -8074,6 +8085,12 @@ async function fetchSheetsData(opts) {
     var rows  = sheetsRowsToObjects(rValues)
                   .map(rosterRowToEmployee)
                   .filter(function(e) { return e.id && e.name; });
+    // Reps marked Termed / Transferred are removed from every view. If the same ID also
+    // appears on a current (blank-status) row, the ID stays.
+    var isGone = function(e) { return /^(termed|transferred)$/i.test(e.employmentStatus || ''); };
+    var keepIds = new Set(rows.filter(function(e) { return !isGone(e); }).map(function(e) { return String(e.id); }));
+    EXCLUDED_REP_IDS = new Set(rows.filter(isGone).map(function(e) { return String(e.id); }).filter(function(id) { return !keepIds.has(id); }));
+    rows = rows.filter(function(e) { return !isGone(e); });
     if (rows.length > 0) {
       ROSTER_EMPLOYEES.length = 0;
       rows.forEach(function(e) { ROSTER_EMPLOYEES.push(e); });
@@ -8386,6 +8403,8 @@ async function fetchSheetsData(opts) {
     if (gcRows.length) { GC_EMPLOYEES.length = 0; gcRows.forEach(function(e){ GC_EMPLOYEES.push(e); }); }
   } catch(e) { errors.push('Game Changers: ' + e.message); }
 
+  purgeExcludedReps();
+
   // ── Totals (authoritative QTD: AC, CS, CAP, SRA, IC) ──────────────────────
   // Fetched last so it overwrites qtr_* fields set by QTD Points.
   // QTD Points still owns: wtd_* (weekly), qtr_status, rolling_status, days_since_sra.
@@ -8454,6 +8473,7 @@ async function fetchSheetsData(opts) {
     if (typeof renderQTD === 'function') renderQTD();
     console.log('[Totals] loaded', totCount, 'rows');
   } catch(e) { errors.push('Totals: ' + e.message); console.error('[Totals] error:', e); }
+  purgeExcludedReps();
 
   if (errors.length) {
     showSyncBanner('Sync issues: ' + errors.join(' / '), true);
