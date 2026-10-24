@@ -563,6 +563,8 @@ body.light-mode tr.pod-sub-header span{color:rgba(28,28,30,0.45)!important}
 .overview-date-meta{font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:10px;color:var(--cyan-dark);padding:4px 10px;background:rgba(170,221,221,0.07);border:1px solid var(--border);white-space:nowrap}
 .overview-target-input{background:transparent;border:none;border-bottom:1px solid rgba(170,221,221,0.3);color:var(--off-white);font-size:24px;font-weight:700;line-height:1;width:72px;text-align:center;font-family:inherit;outline:none;padding:0 2px}
 .ov-targets-btn{margin-left:auto;display:flex;align-items:center;gap:5px;background:transparent;border:0.5px solid var(--btn-border-idle);color:var(--btn-idle);padding:5px 11px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ov-targets-btn,#ov-targets-panel,#wtd-goals-btn,#wtd-goals-panel{display:none !important}
+.overview-target-input{pointer-events:none;border-bottom-color:transparent !important}
 .ov-targets-btn:hover,.ov-targets-btn.open{border-color:var(--sand);color:var(--sand)}
 .ov-targets-panel{display:none;background:var(--card-bg);border:0.5px solid var(--border);padding:18px 24px;margin-top:12px}
 .ov-targets-panel.visible{display:block}
@@ -2709,9 +2711,10 @@ let ROSTER_EMPLOYEES   = []; // Populated from Google Sheets on load
 // Reps whose roster PAI column says Combine — their names are underlined on the Squads tab and scorecards
 let _combinePaiCache = null, _combinePaiLen = -1;
 function isCombineRep(id) {
-  if (!_combinePaiCache || _combinePaiLen !== ROSTER_EMPLOYEES.length) {
+  if (!_combinePaiCache || _combinePaiLen !== ROSTER_EMPLOYEES.length + NEW_HIRE_EMPLOYEES.length * 100000) {
     _combinePaiCache = new Set(ROSTER_EMPLOYEES.filter(e => /^combine$/i.test(e.pai || '')).map(e => String(e.id)));
-    _combinePaiLen = ROSTER_EMPLOYEES.length;
+    NEW_HIRE_EMPLOYEES.forEach(e => { if (e && e.id) _combinePaiCache.add(String(e.id)); }); // New Hires tab = newest reps
+    _combinePaiLen = ROSTER_EMPLOYEES.length + NEW_HIRE_EMPLOYEES.length * 100000;
   }
   return _combinePaiCache.has(String(id));
 }
@@ -2871,12 +2874,10 @@ function qtdPacePct(dateStr) {
 function getTarget(prefix, cat, office) {
   if (office) {
     const el = document.getElementById(`${prefix}-cmp-target-${cat}`);
-    if (el) { const v = parseInt(el.value); if (!isNaN(v) && v > 0) return v; }
     const officeMap = prefix === 'wtd' ? OFFICE_WTD_TARGETS : OFFICE_QTD_TARGETS;
     return (officeMap[office] || {})[cat] || (prefix === 'wtd' ? WTD_TARGETS : QTD_TARGETS)[cat];
   }
   const el = document.getElementById(`${prefix}-target-${cat}`);
-  if (el) { const v = parseInt(el.value); if (!isNaN(v) && v > 0) return v; }
   // No office arg = primary office. Use per-office sheet targets if loaded, then flat fallback.
   const primaryOffice = CONSUL_CONFIG.offices[0];
   const officeMap = prefix === 'wtd' ? OFFICE_WTD_TARGETS : OFFICE_QTD_TARGETS;
@@ -2911,7 +2912,7 @@ let rosterOfficeFilter=CONSUL_CONFIG.offices[0], rosterSortMode='name', rosterVi
 const WTD_GOALS_DEFAULT = {ac:4, cs:3, sra:2, cap:1, ic:1, pitches:30, hours:30};
 let WTD_GOALS = (function(){
   try {
-    const saved = localStorage.getItem('xii-wtd-goals');
+    const saved = null; // goals come only from the Office Goals tab
     if (saved) {
       const parsed = JSON.parse(saved);
       return Object.assign({}, WTD_GOALS_DEFAULT, parsed);
@@ -2920,7 +2921,7 @@ let WTD_GOALS = (function(){
   return Object.assign({}, WTD_GOALS_DEFAULT);
 })();
 function saveWTDGoals() {
-  try { localStorage.setItem('xii-wtd-goals', JSON.stringify(WTD_GOALS)); } catch(e) {}
+  /* goals are sheet-controlled; no local persistence */
 }
 
 // ── HELPERS ──
@@ -3440,9 +3441,8 @@ function buildProgressCard(cat, target, actual, pace, prefix){
       <div class="prog-num">
         <span class="prog-num-lbl">Target</span>
         <input class="overview-target-input" id="${prefix}-target-${cat}"
-          type="number" min="1" value="${target}"
-          onchange="renderOverview()" onclick="this.select()"
-          title="Click to edit target">
+          type="number" min="1" value="${target}" readonly tabindex="-1"
+          title="Set in the Office Goals tab">
       </div>
       <div class="prog-num"><span class="prog-num-lbl">Actual</span><span class="prog-num-val" style="color:${bColor}">${actual}</span></div>
       <div class="prog-num"><span class="prog-num-lbl">Pace</span>${paceVal}</div>
