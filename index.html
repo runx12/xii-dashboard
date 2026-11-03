@@ -725,6 +725,8 @@ body.light-mode #training-calendar th{color:#fff;}
 #training-calendar th:nth-child(2){width:118px;}
 #training-calendar th:nth-child(4){width:96px;}
 #training-calendar td.tc-w{width:96px;font-weight:700;}
+#training-calendar a.tc-link{color:inherit;text-decoration:underline;text-decoration-color:var(--tc-accent);text-underline-offset:3px;}
+#training-calendar a.tc-link:hover{color:var(--tc-accent);}
 #training-calendar tr.tc-off td{font-style:italic;color:var(--text-muted);}
 #training-calendar tr.tc-past td{opacity:.45;}
 #training-calendar tr.tc-next td{background:rgba(53,196,174,0.13);}
@@ -2955,7 +2957,7 @@ function renderTrainingCalendar() {
       if (r.done) num = '&#10003;'; else { n++; num = String(n).padStart(2, '0'); }
       const isNext = !past && !r.done && !nextMarked; if (isNext) nextMarked = true;
       const cls = (past || r.done ? 'tc-past' : '') + (isNext ? ' tc-next' : '');
-      return '<tr class="' + cls + '"><td class="tc-n">' + (past && !r.done ? '&#10003;' : num) + '</td><td class="tc-d">' + fmt(r.d) + '</td><td>' + esc(r.t)
+      return '<tr class="' + cls + '"><td class="tc-n">' + (past && !r.done ? '&#10003;' : num) + '</td><td class="tc-d">' + fmt(r.d) + '</td><td>' + (/^https?:\/\//i.test(r.link || '') ? '<a class="tc-link" href="' + esc(r.link) + '" target="_blank" rel="noopener">' + esc(r.t) + '</a>' : esc(r.t))
         + (r.done ? '<span class="tc-tag">Completed</span>' : '') + (isNext ? '<span class="tc-tag">Next</span>' : '') + '</td><td class="tc-w">' + esc(r.who || '') + '</td></tr>';
     }).join('');
     return '<section><h3>' + esc(sec.title) + '<small>' + esc(sec.sub) + '</small></h3><table><thead><tr><th style="text-align:center">#</th><th>Date</th><th>Training</th><th>Trainer</th></tr></thead><tbody>' + body + '</tbody></table></section>';
@@ -8686,6 +8688,44 @@ async function fetchSheetsData(opts) {
     }).filter(Boolean);
     if (icRows.length) { COMBINE2_EMPLOYEES.length = 0; icRows.forEach(function(e){ COMBINE2_EMPLOYEES.push(e); }); }
   } catch(e) { errors.push('In Combine: ' + e.message); }
+
+  // ── Training Calendar (Sheet tab "Training Calendar" overrides the built-in lists below when it has rows) ──
+  try {
+    var tcRes = await fetchWithTimeout(sheetsUrl('Training Calendar'));
+    if (!tcRes.ok) throw new Error('HTTP ' + tcRes.status);
+    var tcRows = sheetsRowsToObjects((await tcRes.json()).values || []);
+    var tcIso = function(v) {
+      if (typeof v === 'number' || /^\d{5}(\.\d+)?$/.test(String(v).trim())) return new Date(Date.UTC(1899, 11, 30) + parseFloat(v) * 86400000).toISOString().slice(0, 10);
+      var t = String(v || '').trim(), m;
+      if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(t))) return m[1] + '-' + m[2].padStart(2, '0') + '-' + m[3].padStart(2, '0');
+      if ((m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(t))) return m[3] + '-' + m[1].padStart(2, '0') + '-' + m[2].padStart(2, '0');
+      return '';
+    };
+    var tcNew = {};
+    tcRows.forEach(function(r) {
+      var office = String(r['office'] || '').trim(), series = String(r['series'] || '').trim(), d = tcIso(r['date']);
+      if (!office || !series || !d) return;
+      var off = String(r['no meeting reason'] || '').trim(), done = /^(true|yes|1)$/i.test(String(r['completed'] == null ? '' : r['completed']).trim());
+      var row = off ? { d: d, off: off } : { d: d, t: String(r['training'] || '').trim(), who: String(r['trainer'] || '').trim(), link: String(r['link'] || '').trim() };
+      if (!off && done) row.done = true;
+      var list = tcNew[office] = tcNew[office] || [];
+      var sec = list.filter(function(x) { return x.title === series; })[0];
+      if (!sec) { sec = { title: series, sub: '', rows: [] }; list.push(sec); }
+      sec.rows.push(row);
+    });
+    var tcOffices = Object.keys(tcNew);
+    if (tcOffices.length) {
+      var DAYS = ['Sundays','Mondays','Tuesdays','Wednesdays','Thursdays','Fridays','Saturdays'];
+      tcOffices.forEach(function(o) { tcNew[o].forEach(function(sec) {
+        sec.rows.sort(function(a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+        sec.sub = DAYS[new Date(sec.rows[0].d + 'T12:00:00').getDay()];
+      }); });
+      Object.keys(TRAINING_CALENDARS).forEach(function(k) { delete TRAINING_CALENDARS[k]; });
+      tcOffices.sort(function(a, b) { return (/orange/i.test(a) ? 0 : 1) - (/orange/i.test(b) ? 0 : 1); }).forEach(function(o) { TRAINING_CALENDARS[o] = tcNew[o]; });
+      if (!TRAINING_CALENDARS[TC_OFFICE]) TC_OFFICE = tcOffices[0];
+      renderTrainingCalendar();
+    }
+  } catch(e) { /* tab missing or unreachable: keep the built-in calendars */ }
 
   // ── New Hires ────────────────────────────────────────────────────────────────
   try {
