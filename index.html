@@ -700,7 +700,7 @@ body.light-mode .rk-chk-item.checked { color: #1C1C1E; }
 #panel-calendar .footer-bar{flex-shrink:0;}
 #training-calendar{--tc-accent:#35C4AE;flex:1;min-height:0;overflow:auto;padding:22px 36px 28px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:34px;align-items:start;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;}
 body.light-mode #training-calendar{--tc-accent:#0F7A6B;}
-#tc-toggle{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
+#tc-toggle,.tc-toggle{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden;}
 .tc-tab{background:transparent;border:0;color:var(--text-muted);font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:7px 16px;cursor:pointer;}
 .tc-tab.active{background:#35C4AE;color:#0b1f1c;}
 body.light-mode .tc-tab.active{background:#0F7A6B;color:#fff;}
@@ -1997,6 +1997,7 @@ body.light-mode #panel-onboard-employee .dash-chip.active, body.light-mode /* Le
 <div id="xii-mob-menu">
   <div class="xii-mob-tab" data-tab="overview" onclick="xiiMobSwitch('overview',this)">Overview</div>
   <div class="xii-mob-tab" data-tab="wtd" onclick="xiiMobSwitch('wtd',this)">Squads</div>
+  <div class="xii-mob-tab" data-tab="pace" onclick="xiiMobSwitch('pace',this)">Pace</div>
   <div class="xii-mob-tab" data-tab="rankings" onclick="xiiMobSwitch('rankings',this)">Rankings</div>
   <div class="xii-mob-tab" data-tab="status-incentive" onclick="xiiMobSwitch('status-incentive',this)">Chasers</div>
   <div class="xii-mob-tab" data-tab="roster" onclick="xiiMobSwitch('roster',this)">Roster</div>
@@ -2009,6 +2010,7 @@ body.light-mode #panel-onboard-employee .dash-chip.active, body.light-mode /* Le
 <div class="tab-bar">
   <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
   <div class="tab" onclick="switchTab('wtd',this)">Squads</div>
+  <div class="tab" onclick="switchTab('pace',this)">Pace</div>
   <div class="tab" onclick="switchTab('calendar',this)">Calendar</div>
   <div class="tab" onclick="switchTab('rankings',this)">Rankings</div>
   <div class="tab" onclick="switchTab('status-incentive',this)">Chasers</div>
@@ -2179,6 +2181,25 @@ body.light-mode #panel-onboard-employee .dash-chip.active, body.light-mode /* Le
 </div>
 
 <!-- ══ ROSTER ══ -->
+<div class="tab-panel" id="panel-pace">
+  <div class="stats-bar" style="grid-template-columns:1fr;padding:0;">
+    <div class="stat-card" style="display:flex;align-items:center;gap:14px;padding:14px 36px;flex-wrap:wrap;">
+      <span class="stat-label" style="margin-bottom:0;">Quarter Pace</span>
+      <div id="pace-toggle" class="tc-toggle"></div>
+      <span style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;">As of</span>
+      <input type="date" class="overview-date-input" id="pace-date-input" onchange="renderPace()">
+      <button class="export-btn" style="margin-left:auto;" onclick="downloadPace()" title="Download this view as a PNG">&#8595; Download PNG</button>
+    </div>
+  </div>
+  <div style="flex:1;min-height:0;overflow:auto;padding:18px 36px 28px;">
+    <canvas id="pace-canvas" width="1920" height="1080" style="width:100%;max-width:1760px;height:auto;display:block;margin:0 auto;border-radius:8px;"></canvas>
+  </div>
+  <div class="footer-bar">
+    <span class="footer-count">QUARTER PACE</span>
+    <span class="footer-brand">■ XII — BUILDING CULTURE FORWARD ■</span>
+  </div>
+</div>
+
 <div class="tab-panel" id="panel-calendar">
   <div class="stats-bar" style="grid-template-columns:1fr;padding:0;">
     <div class="stat-card" style="display:flex;align-items:center;gap:14px;padding:14px 36px;">
@@ -2724,6 +2745,189 @@ const TRAINING_CALENDARS = {
 var TC_OFFICE = 'Orange County';
 function setTrainingOffice(o) { TC_OFFICE = o; renderTrainingCalendar(); }
 
+// ── PACE VIEW (per-office quarter-to-date pace, drawn on a 1920×1080 canvas so the page and the PNG are identical) ──
+var PACE_OFFICE = '';
+var PACE_GREEN = '#39E31F';
+function paceOffices() {
+  var out = [];
+  [].concat(CONSUL_CONFIG.offices || [], CONSUL_CONFIG.compare_offices || []).forEach(function(o) {
+    var s = shortOffice(o); if (s && out.indexOf(s) < 0) out.push(s);
+  });
+  return out;
+}
+function paceAccent(office) {
+  if (/orange/i.test(office)) return PACE_GREEN;
+  return (CONSUL_CONFIG.office_colors || {})[office] || '#FF6200';
+}
+function paceAsOf() {
+  var el = document.getElementById('pace-date-input');
+  if (el && el.value) return new Date(el.value + 'T12:00:00');
+  var q = document.getElementById('qtd-date-input');
+  return (q && q.value) ? new Date(q.value + 'T12:00:00') : new Date();
+}
+function paceData(office, asOf) {
+  var norm = function(s) { return String(s || '').trim().toLowerCase(); };
+  var rosterByName = {};
+  ROSTER_EMPLOYEES.forEach(function(r) { rosterByName[norm(r.name)] = r; });
+  var qStart = new Date(asOf.getFullYear(), Math.floor(asOf.getMonth() / 3) * 3, 1, 12);
+  var days = Math.round((asOf - qStart) / 86400000);
+  var weeks = Math.min(13, Math.max(1, Math.floor(days / 7)));
+  var left = 13 - weeks;
+  var qNum = Math.floor(asOf.getMonth() / 3) + 1;
+  var squads = [];
+  Object.keys(SQUAD_DB).forEach(function(k) {
+    if (!k || k === 'No Squad') return;
+    var g = SQUAD_DB[k];
+    var icGoal = g.qtr_ic || 0, sraGoal = g.qtr_sra || (g.weekly_sra || 0) * 13;
+    if (!icGoal && !sraGoal) return;
+    var roster = ROSTER_EMPLOYEES.filter(function(r) { return norm(r.squad) === norm(k); });
+    var count = {};
+    roster.forEach(function(r) { var o = shortOffice(r.office); if (o) count[o] = (count[o] || 0) + 1; });
+    var best = Object.keys(count).sort(function(a, b) { return count[b] - count[a]; })[0];
+    if (!best) { var ld = rosterByName[norm(g.leader)]; best = ld ? shortOffice(ld.office) : ''; }
+    if (best !== office) return;
+    var mem = QTD_EMPLOYEES.filter(function(e) { return norm(e.squad) === norm(k); });
+    var sum = function(f) { return Math.round(mem.reduce(function(s, e) { return s + (e[f] || 0); }, 0)); };
+    var ic = sum('qtr_ic'), sra = sum('qtr_sra'), cap = sum('qtr_cap');
+    var pace = function(a, goal) { return goal > 0 ? a / (goal * weeks / 13) : 0; };
+    squads.push({ name: k, lead: g.leader || '', ic: ic, icGoal: icGoal, sra: sra, sraGoal: sraGoal, cap: cap,
+      icPace: pace(ic, icGoal), sraPace: pace(sra, sraGoal), icNeed: left > 0 ? Math.max(0, (icGoal - ic) / left) : 0 });
+  });
+  squads.sort(function(a, b) { return b.icPace - a.icPace; });
+  var T = { ic: 0, icGoal: 0, sra: 0, sraGoal: 0, cap: 0 };
+  squads.forEach(function(s) { T.ic += s.ic; T.icGoal += s.icGoal; T.sra += s.sra; T.sraGoal += s.sraGoal; T.cap += s.cap; });
+  T.capGoal = ((OFFICE_QTD_TARGETS[office] || {}).CAP) || 0;
+  var pc = function(a, goal) { return goal > 0 ? a / (goal * weeks / 13) : 0; };
+  T.icPace = pc(T.ic, T.icGoal); T.sraPace = pc(T.sra, T.sraGoal); T.capPace = pc(T.cap, T.capGoal);
+  T.need = left > 0 ? Math.max(0, (T.icGoal - T.ic) / left) : 0;
+  T.plan = T.icGoal / 13;
+  return { office: office, squads: squads, T: T, weeks: weeks, left: left, qNum: qNum, year: asOf.getFullYear(), asOf: asOf };
+}
+function paceHeadline(d) {
+  var W = ['Zero','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen'];
+  var T = d.T, pct = Math.round(T.icPace * 100);
+  var title = W[d.weeks] + ' week' + (d.weeks === 1 ? '' : 's') + ' in, ' + d.office + ' is at ' + pct + '% of its IC pace';
+  var list = function(a) { return a.length <= 2 ? a.join(' and ') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; };
+  var ahead = function(key) { return d.squads.filter(function(s) { return s[key] >= 1; }).map(function(s) { return s.name; }); };
+  var phrase = function(a, m, all) {
+    if (!a.length) return 'No squad is ahead of pace on ' + m;
+    if (a.length === all) return 'Every squad is ahead of pace on ' + m;
+    return a.length === 1 ? a[0] + ' is the only squad ahead of pace on ' + m : list(a) + ' are ahead of pace on ' + m;
+  };
+  var n = d.squads.length;
+  var icA = ahead('icPace'), sraA = ahead('sraPace');
+  var second = !sraA.length ? 'none are ahead on SRA' : sraA.length === n ? 'all are ahead on SRA' : sraA.length === 1 ? sraA[0] + ' is ahead on SRA' : list(sraA) + ' are ahead on SRA';
+  var sub = (!icA.length && !sraA.length) ? 'No squad is ahead of pace on IC or SRA.' : phrase(icA, 'IC', n) + '; ' + second + '.';
+  if (T.ic >= T.icGoal) sub += ' The quarter IC goal has been reached.';
+  else {
+    var need = Math.round(T.need), plan = Math.round(T.plan);
+    sub += ' Reaching ' + T.icGoal + ' IC takes ' + need + ' a week' + (need > plan ? ', up from ' + plan : need < plan ? ', down from ' + plan : '') + '.';
+  }
+  return { title: title, sub: sub };
+}
+function paceDraw(ctx, d) {
+  var W = 1920, H = 1080, acc = paceAccent(d.office), T = d.T;
+  var SANS = '"Helvetica Neue", Helvetica, Arial, sans-serif', SERIF = 'Georgia, "DejaVu Serif", "Times New Roman", serif';
+  var GRAY = '#8e8e93', CARD = '#3a3a3f', TRACK = '#28282b', FILL = '#86868d';
+  var rrect = function(x, y, w, h, r, fill, stroke, lw) {
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1; ctx.stroke(); }
+  };
+  // text with optional letter spacing; returns the width drawn
+  var text = function(s, x, y, o) {
+    s = String(s); ctx.font = o.font; ctx.fillStyle = o.color || '#fff'; ctx.textBaseline = 'middle';
+    var ls = o.ls || 0, w;
+    if (!ls) { w = ctx.measureText(s).width; ctx.textAlign = o.align === 'right' ? 'right' : 'left'; ctx.fillText(s, x, y); return w; }
+    var cw = s.split('').map(function(c) { return ctx.measureText(c).width + ls; }); w = cw.reduce(function(a, b) { return a + b; }, 0) - ls;
+    var cx = o.align === 'right' ? x - w : x; ctx.textAlign = 'left';
+    s.split('').forEach(function(c, i) { ctx.fillText(c, cx, y); cx += cw[i]; });
+    return w;
+  };
+  var meas = function(s, font) { ctx.font = font; return ctx.measureText(String(s)).width; };
+  ctx.clearRect(0, 0, W, H); ctx.fillStyle = '#232325'; ctx.fillRect(0, 0, W, H);
+  var MON = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var asOfS = (d.asOf.getMonth() + 1) + '/' + d.asOf.getDate();
+  var hl = paceHeadline(d);
+  text(d.office.toUpperCase() + ' · QUARTER TO DATE · AS OF ' + asOfS, 96, 92, { font: '700 16px ' + SANS, color: acc, ls: 3.2 });
+  var tf = '700 52px ' + SERIF, tw = meas(hl.title, tf), ts = tw > 1728 ? 52 * 1728 / tw : 52;
+  text(hl.title, 96, 140, { font: '700 ' + ts + 'px ' + SERIF });
+  var sf = '400 22px ' + SANS, sw = meas(hl.sub, sf);
+  text(hl.sub, 96, 188, { font: '400 ' + (sw > 1728 ? 22 * 1728 / sw : 22) + 'px ' + SANS, color: '#f0f0f2' });
+  // headline cards
+  var pc = function(p) { return Math.round(p * 100) + '% of pace'; };
+  var cards = [
+    { n: T.ic,  l: 'IC quarter to date',  s: 'of ' + T.icGoal + ' goal · ' + pc(T.icPace) },
+    { n: T.sra, l: 'SRA quarter to date', s: 'of ' + T.sraGoal + ' goal · ' + pc(T.sraPace) },
+    { n: T.cap, l: 'CAP quarter to date', s: T.capGoal ? 'of ' + T.capGoal + ' goal · ' + pc(T.capPace) : 'no CAP goal set' },
+    { n: Math.round(T.need), l: 'IC a week from here', s: 'for the last ' + d.left + ' weeks · plan was ' + Math.round(T.plan), hi: true }
+  ];
+  cards.forEach(function(c, i) {
+    var x = 96 + i * 437.7, w = 415;
+    rrect(x, 226, w, 100, 16, CARD, c.hi ? acc : null, 2.5);
+    text(c.n, x + 26, 278, { font: '700 60px ' + SERIF, color: c.hi ? acc : '#fff' });
+    var lx = x + 26 + meas(c.n, '700 60px ' + SERIF) + 18;
+    text(c.l, lx, 266, { font: '700 20px ' + SANS });
+    text(c.s, lx, 290, { font: '400 15px ' + SANS, color: GRAY });
+  });
+  // table
+  var n = Math.max(1, d.squads.length), rowH = Math.min(134, Math.floor(525 / n)), top = 348, rows0 = top + 44;
+  rrect(96, top, 1728, 44 + n * rowH + 12, 16, CARD);
+  var HF = '700 14px ' + SANS;
+  text('SQUAD', 122, top + 28, { font: HF, color: GRAY, ls: 2.8 });
+  text('IC · % OF PACE TO DATE', 492, top + 28, { font: HF, color: GRAY, ls: 2.8 });
+  text('SRA · % OF PACE TO DATE', 1060, top + 28, { font: HF, color: GRAY, ls: 2.8 });
+  text('IC NEEDED / WEEK', 1798, top + 28, { font: HF, color: GRAY, ls: 2.8, align: 'right' });
+  ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fillRect(122, rows0 - 1, 1676, 1);
+  d.squads.forEach(function(s, i) {
+    var cy = rows0 + i * rowH + rowH / 2;
+    if (i < d.squads.length - 1) { ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(122, rows0 + (i + 1) * rowH - 1, 1676, 1); }
+    var nameY = s.lead ? cy - (rowH > 100 ? 12 : 9) : cy;
+    var nw = text(s.name, 122, nameY, { font: '700 26px ' + SANS, color: acc });
+    if (s.lead) text(s.lead, 122, cy + (rowH > 100 ? 17 : 15), { font: '400 16px ' + SANS, color: '#e8e8ea' });
+    [[492, s.icPace, s.ic, s.icGoal, 'IC'], [1060, s.sraPace, s.sra, s.sraGoal, 'SRA']].forEach(function(b) {
+      var tx = b[0], trackW = 312, pace = b[1], on = pace >= 1;
+      rrect(tx, cy - 9, trackW, 18, 9, TRACK);
+      var fw = Math.min(pace, 1.5) / 1.5 * trackW;
+      if (fw > 0) rrect(tx, cy - 9, Math.max(fw, 18), 18, 9, on ? PACE_GREEN : FILL);
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath();
+      ctx.moveTo(tx + trackW / 1.5, cy - 16); ctx.lineTo(tx + trackW / 1.5, cy + 16); ctx.stroke(); ctx.setLineDash([]);
+      text(Math.round(pace * 100) + '%', tx + trackW + 84, cy - 1, { font: '700 26px ' + SANS, color: on ? PACE_GREEN : '#fff', align: 'right' });
+      text(b[2] + ' of ' + b[3] + ' ' + b[4], tx + trackW + 94, cy + 2, { font: '400 16px ' + SANS, color: '#e8e8ea' });
+    });
+    var nd = s.icNeed.toFixed(1), unit = ' IC/wk', uw = meas(unit, '400 16px ' + SANS);
+    text(unit, 1798, cy + 2, { font: '400 16px ' + SANS, color: GRAY, align: 'right' });
+    text(nd, 1798 - uw, cy - 1, { font: '700 26px ' + SANS, align: 'right' });
+  });
+  if (!d.squads.length) text('No squads with goals found for ' + d.office + ' in the Squad Structure tab.', 122, rows0 + 60, { font: '400 20px ' + SANS, color: GRAY });
+  // footer
+  var qLbl = 'Q' + d.qNum + ' ' + d.year;
+  text(d.office.toUpperCase() + ' · EXPANSION TEAM × THE ORIGINAL WAY · ' + qLbl.toUpperCase(), 96, 1042, { font: '400 15px ' + SANS, color: GRAY, ls: 3 });
+  text('Pace = Q' + d.qNum + ' goal × ' + d.weeks + ' of 13 weeks. Dashed line = on pace (100%). Bars stop at 150%. Squads sorted by IC pace. Source: squad scorecards as of ' + asOfS + '.',
+    1824, 1042, { font: '400 15px ' + SANS, color: GRAY, align: 'right' });
+}
+function renderPace() {
+  var cv = document.getElementById('pace-canvas'); if (!cv) return;
+  var offs = paceOffices();
+  if (!PACE_OFFICE || offs.indexOf(PACE_OFFICE) < 0) PACE_OFFICE = offs[0] || '';
+  var pd = document.getElementById('pace-date-input');
+  if (pd && !pd.value) { var q = document.getElementById('qtd-date-input'); var t = new Date(); pd.value = (q && q.value) || (t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0')); }
+  var tog = document.getElementById('pace-toggle');
+  if (tog) tog.innerHTML = offs.map(function(o) { return '<button type="button" class="tc-tab' + (o === PACE_OFFICE ? ' active' : '') + '" onclick="setPaceOffice(\'' + o + '\')">' + o + '</button>'; }).join('');
+  cv.width = 1920; cv.height = 1080;
+  paceDraw(cv.getContext('2d'), paceData(PACE_OFFICE, paceAsOf()));
+}
+function setPaceOffice(o) { PACE_OFFICE = o; renderPace(); }
+function downloadPace() {
+  var cv = document.getElementById('pace-canvas'); if (!cv) return;
+  var a = paceAsOf(), ds = a.getFullYear() + '-' + String(a.getMonth() + 1).padStart(2, '0') + '-' + String(a.getDate()).padStart(2, '0');
+  cv.toBlob(function(b) {
+    var u = URL.createObjectURL(b), l = document.createElement('a');
+    l.href = u; l.download = 'Pace_' + PACE_OFFICE.replace(/\s+/g, '_') + '_' + ds + '.png';
+    document.body.appendChild(l); l.click(); l.remove(); setTimeout(function() { URL.revokeObjectURL(u); }, 1000);
+  }, 'image/png');
+}
+
 function renderTrainingCalendar() {
   const host = document.getElementById('training-calendar');
   if (!host) return;
@@ -3146,6 +3350,7 @@ function switchTab(id, el){
   else if(id==='onboarding') { try { ob_renderTable(); } catch(e) {} }
   else if(id==='overview') renderOverview();
   else if(id==='calendar') { renderTrainingCalendar(); }
+  else if(id==='pace') renderPace();
   else if(id==='rankings') renderRankings();
   else if(id==='data') renderDataTab();
   else if(id==='combine') renderCombineTab();
