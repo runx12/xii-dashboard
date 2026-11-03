@@ -4680,7 +4680,7 @@ function renderWTD(){
       <td class="td-name" style="cursor:pointer" data-repid="${e.id}" onclick="openRepModal(this.dataset.repid)"><span style="display:inline-flex;align-items:center">${combineNameHtml(e.id,e.name)}${trendHtml}${sraLightHtml}</span></td>
       <td class="col-wtd-ac td-num ${wtdCls(e.wtd_ac,WTD_GOALS.ac)}">${fmtN(e.wtd_ac)}</td>
       <td class="col-wtd-cs td-num ${wtdCls(e.wtd_cs,WTD_GOALS.cs)}">${fmtN(e.wtd_cs)}</td>
-      <td class="col-wtd-sra td-num ${wtdCls(e.wtd_sra,repSraGoal(e,'wtd'))}">${sraGoalCellHtml(e.wtd_sra,repSraGoal(e,'wtd'))}</td>
+      <td class="col-wtd-sra td-num ${wtdCls(e.wtd_sra,repSraGoal(e,'wtd'))}">${fmtN(e.wtd_sra)}</td>
       <td class="col-wtd-cap td-num ${wtdCls(e.wtd_cap,WTD_GOALS.cap)}">${fmtN(e.wtd_cap)}</td>
       <td class="col-wtd-ic td-num ${wtdCls(e.wtd_ic,WTD_GOALS.ic)}">${fmtN(e.wtd_ic)}</td>
       <td class="col-wtd-knocks td-num ${e.knocks?'pos':'nil'}">${fmtN(e.knocks)}</td>
@@ -5480,7 +5480,7 @@ function renderSquadSnapshot(squadKey) {
     g.rows.forEach((r, i) => {
       const bg = i % 2 === 0 ? SC_COLOR.stripe : SC_COLOR.row;
       html += '<tr style="background:' + bg + '"><td style="' + F + 'color:' + SC_COLOR.text + ';font-size:14px;padding:12px 20px;white-space:nowrap;">' + (r.combine ? '<span style="text-decoration:underline;text-underline-offset:3px;">' + r.name + '</span>' : r.name) + (r.idle ? ' <span title="No activity" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + SC_COLOR.idle + ';margin-left:7px;vertical-align:middle;"></span>' : '') + '</td>'
-        + r.vals.map((v, ci) => '<td style="' + F + 'color:' + (r.hits[ci] ? SC_COLOR.hitText : SC_COLOR.text) + ';font-size:14px;padding:12px 10px;text-align:center;' + (r.hits[ci] ? 'background:' + SC_COLOR.hitBg + ';font-weight:700;box-shadow:inset 0 0 10px rgba(45,196,142,0.55);' : '') + '">' + ((d.mode === 'qtd' && ci === 3 && !v) ? '—' : (ci === d.sraIdx && r.sraGoal > 0 ? v + '<span style="font-size:10px;font-weight:400;color:#8a8f99;"> / ' + fmtGoal(r.sraGoal) + '</span><div style="height:3px;width:44px;margin:4px auto 0;background:#d9dce3;border-radius:2px;overflow:hidden;"><div style="height:3px;width:' + Math.min(100, Math.round(v / r.sraGoal * 100)) + '%;background:' + (r.hits[ci] ? '#2DC48E' : '#5A9EA0') + ';"></div></div>' : v)) + '</td>').join('') + '</tr>';
+        + r.vals.map((v, ci) => '<td style="' + F + 'color:' + (r.hits[ci] ? SC_COLOR.hitText : SC_COLOR.text) + ';font-size:14px;padding:12px 10px;text-align:center;' + (r.hits[ci] ? 'background:' + SC_COLOR.hitBg + ';font-weight:700;box-shadow:inset 0 0 10px rgba(45,196,142,0.55);' : '') + '">' + ((d.mode === 'qtd' && ci === 3 && !v) ? '—' : (d.mode === 'qtd' && ci === d.sraIdx && r.sraGoal > 0 ? v + '<span style="font-size:10px;font-weight:400;color:#8a8f99;"> / ' + fmtGoal(r.sraGoal) + '</span><div style="height:3px;width:44px;margin:4px auto 0;background:#d9dce3;border-radius:2px;overflow:hidden;"><div style="height:3px;width:' + Math.min(100, Math.round(v / r.sraGoal * 100)) + '%;background:' + (r.hits[ci] ? '#2DC48E' : '#5A9EA0') + ';"></div></div>' : v)) + '</td>').join('') + '</tr>';
     });
   });
   html += '<tr style="background:' + SC_COLOR.totalBg + ';border-top:2px solid ' + SC_COLOR.head + '"><td style="' + F + 'color:' + SC_COLOR.head + ';font-weight:700;font-size:15px;padding:14px 20px;white-space:nowrap;">' + d.totalLabel + '</td>'
@@ -5548,7 +5548,7 @@ function drawSquadScorecard(d, scale) {
           c.fillRect(colX(ci) - numW / 2 + 4, y + 4, numW - 8, rowH - 8); c.restore();
           c.fillStyle = SC_COLOR.hitText; c.font = '700 15px ' + SC_FONT;
         }
-        const sg = ci === d.sraIdx && r.sraGoal > 0;
+        const sg = d.mode === 'qtd' && ci === d.sraIdx && r.sraGoal > 0;
         c.fillText((d.mode === 'qtd' && ci === 3 && !v) ? '—' : String(v), colX(ci), y + rowH / 2 + (sg ? -3 : 1));
         if (sg) {
           const gl = '/' + fmtGoal(r.sraGoal), vw = c.measureText(String(v)).width;
